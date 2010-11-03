@@ -2,4 +2,4 @@
 -export([start/0]).
 
 start() ->
-    void.
+    ezic_record:test().

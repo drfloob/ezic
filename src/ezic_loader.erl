@@ -52,6 +52,7 @@ parse_lines({ok, Line}, File, Records) ->
 
 
 parse_lines_2(Line, File, Records) ->
+    ?debug("Line: ~p", [Line]),
     [Type | Data] = string:tokens(Line, " \t"),
     {ok, PrevType, PrevName} = prev_rec_type(Records),
     {ok, Record} = build_record(Type, Data, {PrevType, PrevName}),
@@ -68,10 +69,13 @@ prev_rec_type(List) when is_list(List) ->
 clean_line(Line) ->
     Line1= string:strip(Line),
     Line2= string:strip(Line1, both, $\n),
-    CPos= string:chr(Line2, $#),
+    Line3= string:strip(Line2, both, $\t),
+    
+    FinalLine=Line3,
+    CPos= string:chr(FinalLine, $#),
     case CPos of
-	0 -> Line2;
-	_ -> string:sub_string(Line2, 1, CPos-1)
+	0 -> FinalLine;
+	_ -> string:sub_string(FinalLine, 1, CPos-1)
     end.
 
 
@@ -84,6 +88,8 @@ build_record("Link", Data,_) ->
     ezic_record:link(Data);
 build_record(GmtOff, Data, {"Zone", PrevName}) ->
     ezic_record:zone([PrevName,GmtOff|Data]);
+build_record("Leap", Data,_) ->
+    ezic_record:leap(Data);
 
 build_record(Type, Data, PT) ->
     {error, {badLine, Type, Data, PT}}.
@@ -92,4 +98,4 @@ build_record(Type, Data, PT) ->
 % converts tzdata records to flattened records
 % returns list of #flatzone{}
 flatten(Records) when is_list(Records) ->
-    void.
+    Records.
