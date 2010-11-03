@@ -1,6 +1,6 @@
 ERLC_WARNINGS = -W1
 MNESIA_DIR = db
-RUN_INIT = -s ezic start
+RUN_INIT = 
 
 all : clean compile
 
