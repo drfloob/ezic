@@ -1,6 +1,8 @@
 ERLC_WARNINGS = -W1
 MNESIA_DIR = db
 RUN_INIT = 
+DEBUG = 
+OPTIONS = 
 
 all : clean compile
 
@@ -14,7 +16,7 @@ test : all
 	erl -noshell -pa ebin -s test_master start -s erlang halt
 
 compile :
-	erlc $(ERLC_WARNINGS) $(OPTIONS) -o ./ebin ./src/*.erl
+	erlc $(DEBUG) $(ERLC_WARNINGS) $(OPTIONS) -o ./ebin ./src/*.erl
 	-erl -noshell -pa ebin -s erldev make_app . -s erlang halt
 
 clean : 
@@ -23,3 +25,8 @@ clean :
 
 run :
 	erl -pa ebin -mnesia dir $(MNESIA_DIR) $(RUN_INIT)
+
+
+debug : DEBUG = +debug_info
+debug : RUN_INIT = -s debugger start
+debug : all
