@@ -1,0 +1,5 @@
+*.beam
+*.dump
+ebin/
+tmp/
+commit_msg
