@@ -19,10 +19,11 @@ current(Now, Rules) ->
 
 
 
+% newest first
 sort(R1, R2) ->
     T1= from_time(R1),
     T2= from_time(R2),
-    ezic_date:compare_datetimes(T1, T2).
+    ezic_date:compare_datetimes(T2, T1).
 
 
 
