@@ -107,6 +107,11 @@ compare_datetimes(DT1, DT2) ->
     compare_datetimes_normal(NDT1, NDT2).
 
 
+compare_datetimes_normal(minimum, _) -> true;
+compare_datetimes_normal(_, maximum) -> true;
+
+
+compare_datetimes_normal(current, current) -> true;
 compare_datetimes_normal(current, _) -> false;
 compare_datetimes_normal(_,current) -> true;
 
@@ -136,6 +141,8 @@ time_equalize(T1, T2) ->
 
 normalize(current) ->  current;
 normalize(only) ->  only;
+normalize(maximum) ->  maximum;
+normalize(minimum) ->  minimum;
 
 normalize(Y) when is_integer(Y) ->
     {{Y,1,1}, #tztime{}};
@@ -173,6 +180,12 @@ dates_overlap_normal({D1s,D1e}, {D2s,D2e}) ->
     date_between_normal(D1s, {D2s,D2e}) 
 	orelse date_between_normal(D1e, {D2s,D2e}).
 
+
+date_between_normal(minimum, {minimum,_}) -> true;
+date_between_normal(minimum, {_,_}) -> false;
+
+date_between_normal(maximum, {_, maximum}) -> true;
+date_between_normal(maximum, {_,_}) -> false;
 
 date_between_normal(only, _) -> false;
 date_between_normal(current, {_, current}) -> true;

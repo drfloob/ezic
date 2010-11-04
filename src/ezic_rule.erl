@@ -11,3 +11,10 @@ project(Rule=#rule{from=F, to=only}) ->
     not_done;
 project(Rule=#rule{from=F, to=T}) ->
     Dates= lists:map(fun(Y)-> ezic_date:for(Rule, Y)  end, lists:seq(F, T)).
+
+
+% returns all the years inbetween
+years(_, Rule=#rule{from=F, to=only}) ->
+    [F];
+years(Max, Rule=#rule{from=F, to=maximum}) ->
+    fudge.
