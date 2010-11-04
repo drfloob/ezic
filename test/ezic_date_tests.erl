@@ -29,7 +29,15 @@ firstlast_day_of_test_() ->
 
 compare_datetimes_test_() ->
     [
-     ?_assertEqual(false, ezic_date:compare_datetimes(
-		       {{1997,3,lastSun},{tztime,{1,0,0},u}}
+     ?_assertNot(ezic_date:compare_datetimes(
+		       {{1997,3,{last, "Sun"}},{tztime,{1,0,0},u}}
 		       , {1997,1,1} ))
+    ].
+
+
+overlap_test_() ->
+    [
+     ?_assert(ezic_date:overlap({1978,only},{{{1977,1,1},#tztime{}}, {{1978,1,1},#tztime{}}}))
+     , ?_assert(ezic_date:overlap({1978,only},{{{1971,1,1},#tztime{}}, {{1978,1,1},#tztime{}}}))
+     , ?_assertNot(ezic_date:overlap({1978,only},{{{1971,1,1},#tztime{}}, {{1977,12,31},#tztime{}}}))
     ].

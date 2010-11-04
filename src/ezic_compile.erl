@@ -52,7 +52,7 @@ flatten(Zones, Rules) ->
     SortedZoneSet= lists:sort(fun zone_sorter/2, ZoneSet),
     
     flatten_set(SortedZoneSet, NeededRules),
-    ?debug("Sorted Zones: ~p", [SortedZoneSet]),
+%    ?debug("Sorted Zones: ~p", [SortedZoneSet]),
 
     flatten(RestZones, Rules).
 
@@ -60,7 +60,7 @@ flatten(Zones, Rules) ->
 
 
 zone_sorter(Z1=#zone{until=U1},#zone{until=U2}) ->
-    ezic_record:compare_datetimes(U1, U2).
+    ezic_date:compare_datetimes(U1, U2).
 
 
     %% case (D1 =< D2) of
@@ -86,14 +86,11 @@ make_rule_zone_filter(#zone{rule=Rule}) ->
     fun(#rule{name=Rule})-> true; (_)->false end.
 
 
+% accepts a rule, and returns true if it exists between the two years given
 make_rule_time_filter(D1, D2) ->
     fun(#rule{from=F, to=T}) ->
-	    GoodFrom= ezic_record:compare_datetimes(D1, F) =:= true 
-		andalso ezic_record:compare_datetimes(F, D2) =:= true,
-	    GoodTo=  ezic_record:compare_datetimes(D1, T) =:= true 
-		andalso ezic_record:compare_datetimes(T, D2) =:= true,
-	    GoodFrom orelse GoodTo
-    end.
+	    ezic_date:overlap({D1,D2}, {F,T})
+       end.
 
 
 
