@@ -119,7 +119,6 @@ flatten_one(Zone=#zone{until=UTo}, NextZone=#zone{until=UFrom}, Rules) ->
 flatten_each(Zone, Rule, From) ->
 %    ?debug("flatten_each: ~n\tZone: ~p~n\tRule: ~p~n\tFrom: ~p", [Zone, Rule, From]),
 %    erlang:error(dbg),
-    years
     not_done.
     
 

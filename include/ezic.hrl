@@ -24,8 +24,10 @@
 
 -ifdef(debug).
 -define(debug(F,X), io:format("{~p:~p} - " ++ F ++ "~n", [?MODULE, ?LINE] ++ X)).
+-define(debug(F), io:format("{~p:~p} - ~p~n", [?MODULE, ?LINE, F])).
 -else.
 -define(debug(F,X), void).
+-define(debug(F), void).
 -endif.
 
 

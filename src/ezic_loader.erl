@@ -14,8 +14,17 @@ load(File) ->
 		     end
 	end,
     {ok, Zones, Rules, Leaps, Links} = ezic_compile:separate(Records),
-    ezic_compile:flatten(Zones, Rules).
-    % @todo store in mnesia
+
+%    ezic_compile:flatten(Zones, Rules).
+
+    ezic_db:wipe(),
+    ezic_db:init(),
+
+    ezic_db:insert_all(Zones),
+    ezic_db:insert_all(Rules),
+    ezic_db:insert_all(Leaps),
+    ezic_db:insert_all(Links).
+    
 
 
 

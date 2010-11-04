@@ -10,7 +10,7 @@
 
 -export([for/2]).
 -export([month_to_num/1, day_to_num/1]).
--export([compare_times/2, compare_datetimes/2, normalize/1, overlap/2]).
+-export([compare_times/2, compare_datetimes/2, normalize/1, overlap/2, date_between/2]).
 
 
 
@@ -153,6 +153,9 @@ normalize({Y,M,{last, D}}) ->
     {Date, #tztime{}};
 
 
+normalize({Date={Y,M,D},Time={H,_,_}}) when is_integer(H) ->
+    {Date, #tztime{time=Time}};
+
 normalize({Date={Y,M,D}, Tz=#tztime{}}) when is_integer(D) ->
     {Date, Tz};
 normalize({{Y,M,TzOn=#tzon{day=Day, filter=Filter}}, Tz=#tztime{}}) ->
@@ -179,6 +182,13 @@ overlap({D1s,D1e}, {D2s,D2e}) ->
 dates_overlap_normal({D1s,D1e}, {D2s,D2e}) ->
     date_between_normal(D1s, {D2s,D2e}) 
 	orelse date_between_normal(D1e, {D2s,D2e}).
+
+
+date_between(D1, {D2s, D2e}) ->
+    D1N= normalize(D1),
+    D2sN= normalize(D2s),
+    D2eN= normalize(D2e),
+    date_between_normal(D1N, {D2sN, D2eN}).
 
 
 date_between_normal(minimum, {minimum,_}) -> true;

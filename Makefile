@@ -1,6 +1,6 @@
 ERLC_WARNINGS := -W1
 MNESIA_DIR := db
-RUN_INIT := 
+RUN_INIT := -run ezic_db init
 DEBUG := +debug_info -Ddebug
 TEST := 
 TZSET := northamerica
@@ -32,7 +32,7 @@ build : DEBUG =
 build : all
 
 
-devstart : RUN_INIT = -s ezic dev_start
+devstart : RUN_INIT := $(RUN_INIT) -s ezic dev_start
 devstart : all run
 
 
