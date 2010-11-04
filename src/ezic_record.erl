@@ -16,7 +16,7 @@ rule([Name,FromS,ToS,Type,InS,OnS,AtS,SaveS,Letters]) ->
     From= parse_from(FromS),
     To= parse_to(ToS),
     % @todo handle year types
-    In= month_to_num(InS),
+    In= ezic_date:month_to_num(InS),
     On= parse_on(OnS),
     At=parse_at(AtS),
     Save=parse_save(SaveS),
@@ -27,13 +27,13 @@ rule([Name,FromS,ToS,Type,InS,OnS,AtS,SaveS,Letters]) ->
       }}.
 
 
-zone([Name,GmtOffS,Rules,FormatS | UntilTokens]) ->
+zone([Name,GmtOffS,Rule,FormatS | UntilTokens]) ->
     GmtOff=parse_time(GmtOffS),
     Until = parse_until(UntilTokens),
     Format= convert_format(FormatS),
     
     {ok, #zone{
-       name=Name, gmtoff=GmtOff, rules=Rules,
+       name=Name, gmtoff=GmtOff, rule=Rule,
        format=Format, until=Until
       }}.
 
@@ -44,10 +44,11 @@ link([From,To]) ->
 
 leap([YearS, MonthS, DayS, TimeS, Corr, RS]) ->
     Y=list_to_integer(YearS),
-    M=month_to_num(MonthS),
+    M=ezic_date:month_to_num(MonthS),
     D=list_to_integer(DayS),
     Time=parse_abs_time(TimeS),
     {ok, #leap{datetime={{Y,M,D}, Time}}}.
+
 
 
 
@@ -73,8 +74,8 @@ parse_to(Other) ->
 
 
 parse_on(X=[$l,$a,$s,$t|Day]) ->
-    case is_day(Day) of
-	true -> list_to_atom(X);
+    case ezic_date:day_to_num(Day) > 0 of
+	true -> {last, Day};
 	false -> erlang:error(badday,X)
     end;
 parse_on(X=[D,A,Y, Sign,$= | IntS]) ->
@@ -82,8 +83,8 @@ parse_on(X=[D,A,Y, Sign,$= | IntS]) ->
     Day=[D,A,Y],
     {ok, FSign} =parse_on_sign(Sign),
 
-    case is_day(Day) of
-	true -> #tzon{day=list_to_atom(string:to_lower(Day)), filter={FSign, Int}};
+    case ezic_date:day_to_num(Day) > 0 of
+	true -> #tzon{day=Day, filter={FSign, Int}};
 	false -> erlang:error(badday, X)
     end;
 parse_on(X) ->
@@ -97,16 +98,16 @@ parse_until([YS]) ->
     {Y,1,1};
 parse_until([YS,MS]) ->
     Y= list_to_integer(YS),
-    M=month_to_num(MS),
+    M= ezic_date:month_to_num(MS),
     {Y,M,1};
 parse_until([YS,MS,DS]) ->
     Y= list_to_integer(YS),
-    M=month_to_num(MS),
+    M= ezic_date:month_to_num(MS),
     D= parse_on(DS),
     {Y,M,D};
 parse_until([YS,MS,DS,TS]) ->
     Y= list_to_integer(YS),
-    M=month_to_num(MS),
+    M= ezic_date:month_to_num(MS),
     D= parse_on(DS),
     {{Y,M,D},parse_time(TS)}.
 
@@ -197,26 +198,4 @@ convert_format(Format, Pos) ->
 	    
     
 
-
-
-month_to_num("Jan") -> 1;
-month_to_num("Feb") -> 2;
-month_to_num("Mar") -> 3;
-month_to_num("Apr") -> 4;
-month_to_num("May") -> 5;
-month_to_num("Jun") -> 6;
-month_to_num("Jul") -> 7;
-month_to_num("Aug") -> 8;
-month_to_num("Sep") -> 9;
-month_to_num("Oct") -> 10;
-month_to_num("Nov") -> 11;
-month_to_num("Dec") -> 12;
-month_to_num(X) -> erlang:error(badMonth, X).
-
-
-
-is_day(X) when X=:="Mon";X=:="Tue";X=:="Wed";X=:="Thu";X=:="Fri";X=:="Sat";X=:="Sun" ->
-    true;
-is_day(_) ->
-    false.
 

@@ -70,12 +70,12 @@ parse_on_test_() ->
     [
      ?_assertEqual(5, ezic_record:parse_on("5"))
 
-     , ?_assertEqual(lastSun, ezic_record:parse_on("lastSun"))
-     , ?_assertEqual(lastMon, ezic_record:parse_on("lastMon"))
+     , ?_assertEqual({last, "Sun"}, ezic_record:parse_on("lastSun"))
+     , ?_assertEqual({last, "Mon"}, ezic_record:parse_on("lastMon"))
      , ?_assertError(badday, ezic_record:parse_on("lastFoo"))
 
-     , ?_assertEqual(#tzon{day=sun, filter={geq, 8}}, ezic_record:parse_on("Sun>=8"))
-     , ?_assertEqual(#tzon{day=sun, filter={leq, 25}}, ezic_record:parse_on("Sun<=25"))
+     , ?_assertEqual(#tzon{day="Sun", filter={geq, 8}}, ezic_record:parse_on("Sun>=8"))
+     , ?_assertEqual(#tzon{day="Sun", filter={leq, 25}}, ezic_record:parse_on("Sun<=25"))
      , ?_assertError(badday, ezic_record:parse_on("Foo<=25"))
     ].
 
@@ -85,3 +85,6 @@ convert_format_test_() ->
      ?_assertEqual("POS", ezic_record:convert_format("POS"))
      , ?_assertEqual("P~sS", ezic_record:convert_format("P%sS"))
     ].
+
+
+

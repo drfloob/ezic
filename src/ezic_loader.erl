@@ -1,5 +1,6 @@
 -module(ezic_loader).
 -include("include/ezic.hrl").
+
 -export([load/1]).
 
 
@@ -12,7 +13,8 @@ load(File) ->
 			 false -> {error, {badFile, File}}
 		     end
 	end,
-    flatten(Records).
+    {ok, Zones, Rules, Leaps, Links} = ezic_compile:separate(Records),
+    ezic_compile:flatten(Zones, Rules).
     % @todo store in mnesia
 
 
@@ -52,7 +54,7 @@ parse_lines({ok, Line}, File, Records) ->
 
 
 parse_lines_2(Line, File, Records) ->
-    ?debug("Line: ~p", [Line]),
+    %?debug("Line: ~p", [Line]),
     [Type | Data] = string:tokens(Line, " \t"),
     {ok, PrevType, PrevName} = prev_rec_type(Records),
     {ok, Record} = build_record(Type, Data, {PrevType, PrevName}),
@@ -94,8 +96,3 @@ build_record("Leap", Data,_) ->
 build_record(Type, Data, PT) ->
     {error, {badLine, Type, Data, PT}}.
 
-
-% converts tzdata records to flattened records
-% returns list of #flatzone{}
-flatten(Records) when is_list(Records) ->
-    Records.

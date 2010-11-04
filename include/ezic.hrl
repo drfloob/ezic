@@ -2,7 +2,7 @@
 -record(rule, {name, from, to, type, in, on, at, save, letters}).
 
 
--record(zone, {name, gmtoff, rules, format, until}).
+-record(zone, {name, gmtoff, rule, format, until}).
 
 
 -record(link, {from, to}).
@@ -11,7 +11,7 @@
 -record(leap, {datetime, corr, rs}).
 
 
--record(tztime, {time, flag}).
+-record(tztime, {time={0,0,0}, flag}).
 -record(tzon, {day, filter}).
 
 
@@ -27,3 +27,7 @@
 -else.
 -define(debug(F,X), void).
 -endif.
+
+
+
+
