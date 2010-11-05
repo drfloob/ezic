@@ -4,6 +4,21 @@ ezic is a set of erlang utilities for the Olsen timezone database files. See the
 
 
 
+License
+-------
+
+This project is in the public domain.
+
+
+
+Status
+------
+
+2010.11.04
+
+ * ezic is "apparently functional". It has been tested very lightly, a bit by unit tests, but mostly by inspection. It's probably not fit for production use.
+
+
 API
 ---
 
@@ -43,23 +58,13 @@ Setup
 Purpose
 -------
 
-The [recommended way](http://www.erlang.org/pipermail/erlang-questions/2006-December/024291.html) of handling timezones in erlang involves setting the system environment variable `TZ` to the desired timezone, then calling erlang time functions. This technique has a few key issues:
+Erlang/OTP doesn't have a timezone library, so I decided to write one.
+
+The [recommended way](http://www.erlang.org/pipermail/erlang-questions/2006-December/024291.html) of handling timezones in erlang involves setting the system environment variable `TZ` to the desired timezone, then calling erlang time functions. As far as I can tell, this technique has a few key issues:
 
  * it only works on *nix systems,
  * it depends on your system's timezone data (preventing custom timezone hackery), and
  * you can create race conditions if you aren't careful
 
-A self-containted erlang solution would avoid these pitfalls, but to be fair, it introduces a few others:
+ezic doesn't have these problems. ezic is, however, a young project with who-knows-how-many problems of its own ;)
 
- * you (the admin) are responsible for updating the timezone database yourself
- * ezic has not yet been battle tested
-
-I think both of these issues will disappear over time, so I opted to write ezic.
-
-
-
-
-License
--------
-
-This project is in the public domain.
