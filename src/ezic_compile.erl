@@ -39,7 +39,7 @@ flatten(Zones, Rules) ->
     flatten(Zones, Rules, []).
 
 % note: recursive
-flatten([], Rules, Flats) ->
+flatten([], _, Flats) ->
     Flats;
 flatten(Zones, Rules, Flats) ->
     [Zone | _] = Zones,
@@ -63,7 +63,7 @@ flatten(Zones, Rules, Flats) ->
 
 
 
-zone_sorter(Z1=#zone{until=U1}, #zone{until=U2}) ->
+zone_sorter(#zone{until=U1}, #zone{until=U2}) ->
     ezic_date:compare_datetimes(U1, U2).
 
 
@@ -110,10 +110,10 @@ flatten_set(ZoneSet, Rules, Prev, Flats) ->
 
 flatten_one(Zone=#zone{until=Until}, none, Rules) ->
     NeededRules= lists:filter(make_rule_time_filter(minimum, Until), Rules),
-    lists:map(fun(R)-> flatten_each(Zone, R, minimum) end, Rules);
+    lists:map(fun(R)-> flatten_each(Zone, R, minimum) end, NeededRules);
 flatten_one(Zone=#zone{until=UTo}, NextZone=#zone{until=UFrom}, Rules) ->
     NeededRules= lists:filter(make_rule_time_filter(UFrom, UTo), Rules),
-    lists:map(fun(R)-> flatten_each(Zone, R, UFrom) end, Rules).
+    lists:map(fun(R)-> flatten_each(Zone, R, UFrom) end, NeededRules).
 
 
 flatten_each(Zone, Rule, From) ->
