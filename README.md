@@ -1,11 +1,27 @@
 ezic
 ====
-ezic is a set of erlang utilities for the Olsen timezone database files.
-
-see the [tz database](http://www.twinsun.com/tz/tz-link.htm) page for more information.
+ezic is a set of erlang utilities for the Olsen timezone database files. See the [tz database](http://www.twinsun.com/tz/tz-link.htm) page for more information.
 
 
-Usage
+
+API
+---
+
+ * `ezic:localtime(TimeZone) -> datetime()`
+ * `ezic:utc_to_time(universal_datetime(), TimeZone) -> local_datetime()`
+ * `ezic:utc_from_time(local_datetime(), TimeZone) -> universal_datetime()`
+ * `ezic:zone_convert(from_datetime(), TimeZoneFrom, TimeZoneTo) -> to_datetime()`
+
+
+
+Admin API
+-------
+
+ * `ezic:load("/path/to/tzdata") -> ok`
+
+
+
+Setup
 -----
   
     # download the timezone data files
@@ -22,25 +38,26 @@ Usage
     2> ezic:localtime("Australia/Adelaide").
 
 
-API
----
-
- * `ezic:load(Folder)`
- * `ezic:localtime(TimeZone) -> datetime()`
- * `ezic:time(datetime(), TimeZone) -> datetime()`
- * `ezic:time2time(datetime(), TimeZoneFrom, TimeZoneTo) -> datetime()`
 
 
 Purpose
 -------
 
-The [recommended way](http://www.erlang.org/pipermail/erlang-questions/2006-December/024291.html) of handling timezones in erlang involves setting the system environment variable `TZ` to the desired timezone, then calling erlang time functions. This technique is probably sufficient for many purposes, but it has a few key issues:
+The [recommended way](http://www.erlang.org/pipermail/erlang-questions/2006-December/024291.html) of handling timezones in erlang involves setting the system environment variable `TZ` to the desired timezone, then calling erlang time functions. This technique has a few key issues:
 
  * it only works on *nix systems,
- * it depends on your system's timezone data (preventing customization), and
+ * it depends on your system's timezone data (preventing custom timezone hackery), and
  * you can create race conditions if you aren't careful
 
-A pure erlang solution avoids all of these pitfalls, hence this project.
+A self-containted erlang solution would avoid these pitfalls, but to be fair, it introduces a few others:
+
+ * you (the admin) are responsible for updating the timezone database yourself
+ * ezic has not yet been battle tested
+
+I think both of these issues will disappear over time, so I opted to write ezic.
+
+
+
 
 License
 -------
