@@ -7,7 +7,14 @@ ezic is a set of erlang utilities for the Olsen timezone database files. See the
 License
 -------
 
-This project is in the public domain.
+I have dedicated this work to the [public domain](http://en.wikipedia.org/wiki/Public_Domain).
+
+
+
+Contributed Code
+----------------
+
+To maintain ezic's status as a public domain work, all contributions must also be dedicated to the public domain. 
 
 
 
@@ -68,3 +75,9 @@ The [recommended way](http://www.erlang.org/pipermail/erlang-questions/2006-Dece
 
 ezic doesn't have these problems. ezic is, however, a young project with who-knows-how-many problems of its own ;)
 
+
+
+Acknowledgements
+----------------
+
+I was inspired by the (anti-) license of the [SQLite project](http://www.sqlite.org/copyright.html)  in my decision to release this into the public domain.
