@@ -1,3 +1,4 @@
+
 -module(ezic_db).
 -include("include/ezic.hrl").
 -include_lib("stdlib/include/qlc.hrl").
@@ -56,7 +57,7 @@ create_tabs(ok) ->
     %% {atomic, ok}= mnesia:create_table(link, [{disc_copies, [node()]},{attributes, record_info(fields, link)}]);
 
     ok;
-create_tabs(E={error, {_, {already_exists,_}}}) ->
+create_tabs({error, {_, {already_exists,_}}}) ->
     mnesia:start(),
     ok;
 create_tabs(E) ->

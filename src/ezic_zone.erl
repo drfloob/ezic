@@ -20,7 +20,7 @@ sort(#zone{until=U1}, #zone{until=U2}) ->
 revsort(Z1=#zone{}, Z2=#zone{}) ->
     not sort(Z1, Z2).
 
-older_zone(Zone=#zone{until=Until}, Now) ->
+older_zone(#zone{until=Until}, Now) ->
     ezic_date:compare_datetimes(Until, Now).
 
 

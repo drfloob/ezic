@@ -115,9 +115,9 @@ compare_datetimes_normal(current, current) -> true;
 compare_datetimes_normal(current, _) -> false;
 compare_datetimes_normal(_,current) -> true;
 
-compare_datetimes_normal({D1, T1}, {D2, T2}) when D1 < D2 ->
+compare_datetimes_normal({D1, _}, {D2, _}) when D1 < D2 ->
     true;
-compare_datetimes_normal({D1, T1}, {D2, T2}) when D1 > D2 ->
+compare_datetimes_normal({D1, _}, {D2, _}) when D1 > D2 ->
     false;
 compare_datetimes_normal({_, T1}, {_, T2}) ->
     compare_times(T1, T2).
@@ -153,12 +153,12 @@ normalize({Y,M,{last, D}}) ->
     {Date, #tztime{}};
 
 
-normalize({Date={Y,M,D},Time={H,_,_}}) when is_integer(H) ->
+normalize({Date={_,_,_},Time={H,_,_}}) when is_integer(H) ->
     {Date, #tztime{time=Time}};
 
-normalize({Date={Y,M,D}, Tz=#tztime{}}) when is_integer(D) ->
+normalize({Date={_,_,D}, Tz=#tztime{}}) when is_integer(D) ->
     {Date, Tz};
-normalize({{Y,M,TzOn=#tzon{day=Day, filter=Filter}}, Tz=#tztime{}}) ->
+normalize({{Y,M,#tzon{day=Day, filter=Filter}}, Tz=#tztime{}}) ->
     Date= first_day_limited(Day, Filter, Y,M),
     {Date, Tz};
 normalize({{Y,M,{last, D}}, Tz=#tztime{}}) ->

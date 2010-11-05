@@ -35,7 +35,7 @@ relevant(Now, Rule=#rule{from=F, to=T}) ->
     end.
 
 
-relevant2(Now, Rule=#rule{in=Month, on=Day, at=Time}) ->
+relevant2(Now, #rule{in=Month, on=Day, at=Time}) ->
     {{Y,_,_},_} = Now,
     RTime= {{Y, Month, Day}, Time},
     ezic_date:compare_datetimes(RTime, Now).

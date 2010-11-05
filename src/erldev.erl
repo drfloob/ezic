@@ -15,7 +15,7 @@ make_app([AppDirAtom]) ->
     Modules = get_modules(AppDir),
     AppSrc = try   get_app_src(AppDir)
 	     catch error:{badmatch, _} ->
-		     io:format("Couldn't get AppSrcFile for ~p~n", [AppDir]),
+%		     io:format("Couldn't get AppSrcFile for ~p~n", [AppDir]),
 		     erlang:halt()
 	     end,
     {application, Name, Opts} = AppSrc,
