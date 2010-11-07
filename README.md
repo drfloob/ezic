@@ -1,6 +1,6 @@
 ezic
 ====
-ezic is a set of erlang utilities for the Olsen timezone database files. See the [tz database](http://www.twinsun.com/tz/tz-link.htm) page for more information.
+ezic is a set of erlang utilities for the Olson timezone database files. See the [tz database](http://www.twinsun.com/tz/tz-link.htm) page for more information.
 
 
 
