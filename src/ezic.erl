@@ -4,8 +4,8 @@
 -export([
 	 localtime/1
 	 , utc_to_local/2
-	 , utc_from_local/2
-	 , zone_convert/3
+%	 , local_to_utc/2
+%	 , zone_convert/3
 	 , next_timechange/1
 	 , next_timechange/2
 	]).
@@ -28,28 +28,28 @@ localtime(TzName) ->
     utc_to_local(erlang:universaltime(), TzName).
 
 
-utc_to_local(Datetime, TzName) ->
-    {ok, Zone, Rule}= current(Datetime, TzName),
-    SecDiff= offset(Zone, Rule),
-    date_add(Datetime, SecDiff).
+utc_to_local(UTCDatetime, TzName) ->
+    {ok, Zone, Rule}= current_as_of_utc(UTCDatetime, TzName),
+    SecDiff= time_offset(Zone, Rule),
+    date_add(UTCDatetime, SecDiff).
 
     
-utc_from_local(Datetime, TzName) ->
-    {ok, Zone, Rule}= current(Datetime, TzName),
-    SecDiff= offset(Zone, Rule),
-    date_subtract(Datetime, SecDiff).
+%% local_to_utc(Datetime, TzName) ->
+%%     {ok, Zone, Rule}= current_as_of_local(Datetime, TzName),
+%%     SecDiff= time_offset(Zone, Rule),
+%%     date_subtract(Datetime, SecDiff).
     
 
-zone_convert(Datetime, FromTimeZone, ToTimeZone) ->
-    UTC= utc_from_local(Datetime, FromTimeZone),
-    utc_to_local(UTC, ToTimeZone).
+%% zone_convert(Datetime, FromTimeZone, ToTimeZone) ->
+%%     UTC= local_to_utc(Datetime, FromTimeZone),
+%%     utc_to_local(UTC, ToTimeZone).
 
 
 
 next_timechange(TzName) ->
-    next_timechange(localtime(TzName), TzName).
+    next_timechange(erlang:universaltime(), TzName).
 
-next_timechange(Datetime, TzName) ->
+next_timechange(UtcDatetime, TzName) ->
     not_done.
 
 
@@ -84,23 +84,19 @@ test() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-current(Datetime, TzName) ->
-    Zones= ezic_db:zones(TzName),
-%    ?debug("All Zones: ~p", [Zones]),
-    CZone= ezic_zone:current(Datetime, Zones),
-%    ?debug("Current Zone: ~p", [CZone]),
-
+current_as_of_utc(UTCDatetime, TzName) ->
+    CZone= ezic_zone:current_as_of_utc(UTCDatetime, TzName),
     RuleName= CZone#zone.rule,
     Rules= ezic_db:rules(RuleName),
-%    ?debug("All Rules: ~p", [Rules]),
-    CRule= ezic_rule:current(Datetime, Rules),
-%    ?debug("Current Rule: ~p", [CRule]),
+    CRule= ezic_rule:current_as_of_utc(UTCDatetime, Rules),
     {ok, CZone, CRule}.
     
 
+%%current_as_of_local(Datetime, TzName) ->
+%%    not_done.
 
 
-offset(Zone, Rule) ->
+time_offset(Zone, Rule) ->
     OffsetSec= ezic_zone:offset_sec(Zone),
     DSTSec= ezic_rule:dst_sec(Rule),
     OffsetSec + DSTSec.

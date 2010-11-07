@@ -4,6 +4,18 @@ ezic is a set of erlang utilities for the Olsen timezone database files. See the
 
 
 
+Status
+------
+
+2010.11.07
+
+ * The time comparisons don't consider time relativity, so they're plain wrong. Within at least 24 hours of timechange or zone change, the results cannot be trusted.
+
+2010.11.04
+
+ * ezic is "apparently functional". It has been tested very lightly, a bit by unit tests, but mostly by inspection. It's probably not fit for production use.
+
+
 License
 -------
 
@@ -16,14 +28,6 @@ Contributed Code
 
 To maintain ezic's status as a public domain work, all contributions must also be dedicated to the public domain. 
 
-
-
-Status
-------
-
-2010.11.04
-
- * ezic is "apparently functional". It has been tested very lightly, a bit by unit tests, but mostly by inspection. It's probably not fit for production use.
 
 
 API

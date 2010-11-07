@@ -16,7 +16,8 @@
 
 
 
-% returns the concrete date tuple for a given rule and year, irrespective of zone
+% returns the date tuple for a given rule and year
+% same for all timezones.
 % e.g. -> {Y,M,D}
 for(#rule{in=M, on={last, D}}, Y)  ->
     last_day_of(D, Y,M);
@@ -24,13 +25,15 @@ for(#rule{in=M, on=#tzon{day=Day, filter=Filter}}, Y) ->
     first_day_limited(Day, Filter, Y,M).
 
 
-
+% returns the date on which the last Day (sun,mon,tue,etc.) occurs in a given month/year
+% same for all timezones
 last_day_of(Day, Y,M) ->
     LastDay= calendar:last_day_of_the_month(Y,M),
     previous_day(Day, {Y,M,LastDay}).
 
 
 % returns a date tuple {Y,M,D} representing the first available date, given the filter
+% same for all timezones
 first_day_limited(Day, {geq, N}, Y,M) ->
     next_day(Day, {Y,M,N});
 first_day_limited(Day, {leq, N}, Y,M) ->
@@ -38,7 +41,8 @@ first_day_limited(Day, {leq, N}, Y,M) ->
     
 
 
-
+% Returns the soonest date on which Day (sun/mon/tue/etc.) occurs BEFORE the given date.
+% same for all timezones
 previous_day(Day, Date={Y,M,D}) ->
     Daynum= day_to_num(Day),
     LeqDoW= calendar:day_of_the_week(Date),
@@ -56,6 +60,8 @@ previous_day(Day, Date={Y,M,D}) ->
     end.
 
 
+% Returns the soonest date on which Day (sun/mon/tue/etc.) occurs AFTER the given date.
+% same for all timezones
 next_day(Day, Date={Y,M,D}) ->
     Daynum= day_to_num(Day),
     LeqDoW= calendar:day_of_the_week(Date),
@@ -115,6 +121,8 @@ compare_datetimes_normal(current, current) -> true;
 compare_datetimes_normal(current, _) -> false;
 compare_datetimes_normal(_,current) -> true;
 
+% @bug this is not true if the times are from different time zones
+% @todo check types for D1 and D2
 compare_datetimes_normal({D1, _}, {D2, _}) when D1 < D2 ->
     true;
 compare_datetimes_normal({D1, _}, {D2, _}) when D1 > D2 ->
@@ -143,6 +151,7 @@ normalize(current) ->  current;
 normalize(only) ->  only;
 normalize(maximum) ->  maximum;
 normalize(minimum) ->  minimum;
+
 
 normalize(Y) when is_integer(Y) ->
     {{Y,1,1}, #tztime{}};

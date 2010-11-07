@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47pre4 r22446"
+   sodipodi:docname="local_to_utc.svg">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="409.57174"
+     inkscape:cy="630.26905"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1280"
+     inkscape:window-height="750"
+     inkscape:window-x="-1"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
+       x="57.984795"
+       y="67.666504"
+       id="text2816"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan2818"
+         x="57.984795"
+         y="67.666504">local_to_utc(LocalDatetime, TimeZoneName)</tspan></text>
+    <text
+       sodipodi:linespacing="100%"
+       id="text3613"
+       y="103.6665"
+       x="97.984795"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
+       xml:space="preserve"><tspan
+         y="199.6665"
+         x="97.984795"
+         sodipodi:role="line"
+         id="tspan3649" /></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 223.24371,165.44825 273.37654,0"
+       id="path3678" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 424.10879,239.18938 270.87616,0"
+       id="path3680" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
+       x="53.375641"
+       y="208.75282"
+       id="text3682"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan3684"
+         x="53.375641"
+         y="208.75282">Los Angeles</tspan></text>
+    <path
+       sodipodi:type="arc"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       id="path3686"
+       sodipodi:cx="503.05597"
+       sodipodi:cy="166.4584"
+       sodipodi:rx="6.0609155"
+       sodipodi:ry="6.0609155"
+       d="m 509.11688,166.4584 a 6.0609155,6.0609155 0 1 1 -12.12183,0 6.0609155,6.0609155 0 1 1 12.12183,0 z"
+       transform="matrix(0.50000002,0,0,0.50000002,245.52798,82.219044)" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
+       x="468.22345"
+       y="131.70966"
+       id="text3688"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan3690"
+         x="468.22345"
+         y="131.70966">2:00am Nov 7th, 2010, PDT-7</tspan></text>
+    <path
+       transform="matrix(0.50000002,0,0,0.50000002,173.52798,155.96017)"
+       d="m 509.11688,166.4584 a 6.0609155,6.0609155 0 1 1 -12.12183,0 6.0609155,6.0609155 0 1 1 12.12183,0 z"
+       sodipodi:ry="6.0609155"
+       sodipodi:rx="6.0609155"
+       sodipodi:cy="166.4584"
+       sodipodi:cx="503.05597"
+       id="path3692"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       sodipodi:type="arc" />
+    <text
+       sodipodi:linespacing="100%"
+       id="text3694"
+       y="281.70966"
+       x="216.22345"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
+       xml:space="preserve"><tspan
+         y="281.70966"
+         x="216.22345"
+         id="tspan3696"
+         sodipodi:role="line">1:00am Nov 7th, 2010, PST-8</tspan></text>
+    <path
+       style="fill:none;stroke:#1b13ff;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 496.99505,164.94317 -72.2259,73.74114"
+       id="path3698" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:9,9;stroke-dashoffset:0"
+       d="m 424,141.36218 0,124"
+       id="path3700" />
+    <path
+       id="path3702"
+       d="m 498,141.36218 0,124"
+       style="fill:none;stroke:#ff0000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:9,9;stroke-dashoffset:0" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
+       x="149"
+       y="397.36218"
+       id="text3704"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan3706"
+         x="149"
+         y="397.36218" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Mono;-inkscape-font-specification:DejaVu Sans Mono"
+       x="157"
+       y="388.36218"
+       id="text3708"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan3710"
+         x="157"
+         y="388.36218">On Nov 7th, 2010, 1:00am to 1:59am will happen twice.</tspan><tspan
+         sodipodi:role="line"
+         x="157"
+         y="404.36218"
+         id="tspan3716" /><tspan
+         sodipodi:role="line"
+         x="157"
+         y="420.36218"
+         id="tspan3712">There is no definitive answer to:</tspan><tspan
+         sodipodi:role="line"
+         x="157"
+         y="436.36218"
+         id="tspan3718">  &quot;What was UTC time given that in Los Angeles </tspan><tspan
+         sodipodi:role="line"
+         x="157"
+         y="452.36218"
+         id="tspan3714">  on Nov 7th, 2010, it was 1:30am&quot;</tspan><tspan
+         sodipodi:role="line"
+         x="157"
+         y="468.36218"
+         id="tspan3724" /><tspan
+         sodipodi:role="line"
+         x="157"
+         y="452.36218"
+         id="tspan3726" /></text>
+  </g>
+</svg>

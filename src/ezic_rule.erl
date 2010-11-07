@@ -2,7 +2,7 @@
 -include("include/ezic.hrl").
 
 
--export([current/2, relevant/2, sort/2]).
+-export([current/2, current_set/2, sort/2]).
 -export([from_time/1, dst_sec/1]).
 
 
@@ -10,9 +10,9 @@
 current(_, []) ->
     none;
 current(Now, Rules) ->
-    RelevantRules= lists:filter(fun(R)-> relevant(Now, R) end, Rules),
-%    ?debug("RelevantRules: ~p", [RelevantRules]),
-    SRules= lists:sort(fun sort/2, RelevantRules),
+    Current_SetRules= lists:filter(fun(R)-> current_set(Now, R) end, Rules),
+%    ?debug("Current_SetRules: ~p", [Current_SetRules]),
+    SRules= lists:sort(fun sort/2, Current_SetRules),
     CRule= choose_rule(SRules),
     CRule.
 
@@ -27,15 +27,15 @@ sort(R1, R2) ->
 
 
 
-relevant(Now, Rule=#rule{from=F, to=T}) ->
+current_set(Now, Rule=#rule{from=F, to=T}) ->
     {{Y,_,_},_} = Now,
     case ezic_date:date_between(Y, {F,T}) of
 	false -> false;
-	true -> relevant2(Now, Rule)
+	true -> current_set2(Now, Rule)
     end.
 
 
-relevant2(Now, #rule{in=Month, on=Day, at=Time}) ->
+current_set2(Now, #rule{in=Month, on=Day, at=Time}) ->
     {{Y,_,_},_} = Now,
     RTime= {{Y, Month, Day}, Time},
     ezic_date:compare_datetimes(RTime, Now).

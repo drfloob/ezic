@@ -1,16 +1,45 @@
 -module(ezic_zone).
 -include("include/ezic.hrl").
 
--export([current/2, sort/2, revsort/2, offset_sec/1]).
+-export([
+	 current/1
+	 , current_as_of_utc/2
+	 , sort/2
+	 , revsort/2
+	 , offset_sec/1
+	]).
 
 
-current(_, []) ->
+
+
+current(TzName) ->
+    current_as_of_utc(erlang:universaltime(), TzName).
+
+current_as_of_utc(UTCDatetime, TzName) ->
+    Zones= ezic_db:zones(TzName),
+    get_zone_utc(UTCDatetime, Zones).
+
+%%current_as_of_local(_Datetime, _TzName) ->
+%%    not_done.
+
+
+
+
+
+get_zone_utc(_, []) ->
     erlang:error(no_current);
-current(Now, Zones) ->
+get_zone_utc(UTCDatetime, Zones) ->
     SortedZones= lists:sort(fun revsort/2, Zones),
-%    ?debug("SortedZones: ~p", [SortedZones]),
-    [CZone|_]= lists:dropwhile(fun(SZ)-> older_zone(SZ, Now) end, SortedZones),
-    CZone.
+%%    [CZone|_]= lists:dropwhile(fun(SZ)-> older_zone_utc(SZ, UTCDatetime) end, SortedZones),
+%%    CZone.
+
+
+    %% begin with GMT offset.
+    %% foreach rule (oldest first)
+    %%   see whether until=(standard|wall|utc) time
+    %%   
+
+    not_done.
 			       
 
 
@@ -20,8 +49,11 @@ sort(#zone{until=U1}, #zone{until=U2}) ->
 revsort(Z1=#zone{}, Z2=#zone{}) ->
     not sort(Z1, Z2).
 
-older_zone(#zone{until=Until}, Now) ->
-    ezic_date:compare_datetimes(Until, Now).
+
+
+% @bug doesn't normalize times. Times are self-relative (to standard time), and Now may come from any timezone unless we're careful about that.
+older_zone(#zone{until=Until}, UTCDatetime) ->
+    ezic_date:compare_datetimes(Until, UTCDatetime).
 
 
 
