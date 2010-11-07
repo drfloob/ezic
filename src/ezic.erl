@@ -1,7 +1,14 @@
 -module(ezic).
 -include("include/ezic.hrl").
 
--export([localtime/1, utc_to_local/2, utc_from_local/2, zone_convert/3]).
+-export([
+	 localtime/1
+	 , utc_to_local/2
+	 , utc_from_local/2
+	 , zone_convert/3
+	 , next_timechange/1
+	 , next_timechange/2
+	]).
 
 -export([load/1, dev_start/0, test/0]).
 
@@ -36,6 +43,16 @@ utc_from_local(Datetime, TzName) ->
 zone_convert(Datetime, FromTimeZone, ToTimeZone) ->
     UTC= utc_from_local(Datetime, FromTimeZone),
     utc_to_local(UTC, ToTimeZone).
+
+
+
+next_timechange(TzName) ->
+    next_timechange(localtime(TzName), TzName).
+
+next_timechange(Datetime, TzName) ->
+    not_done.
+
+
 
 
 
