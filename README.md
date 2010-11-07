@@ -7,7 +7,7 @@ ezic is a set of erlang utilities for the Olsen timezone database files. See the
 License
 -------
 
-I have dedicated this work to the [public domain](http://en.wikipedia.org/wiki/Public_Domain).
+I have dedicated this work to the [public domain](http://en.wikipedia.org/wiki/Public_Domain). Anyone is free to copy, modify, publish, use, compile, sell, or distribute the original code, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
 
 
 
