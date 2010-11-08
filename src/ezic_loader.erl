@@ -10,10 +10,10 @@ load(File) ->
 	    true -> {ok, parse_dir(File)};
 	    false -> case filelib:is_regular(File) of
 			 true -> {ok, parse_file(File)};
-			 false -> {error, {badFile, File}}
+			 false -> erlang:error(badFile, File)
 		     end
 	end,
-    {ok, Zones, Rules, Leaps, Links} = ezic_compile:separate(Records),
+    {ok, Zones, Rules, Leaps, Links} = ezic_record:separate(Records),
 
     ezic_db:wipe(),
     ezic_db:init(),
@@ -27,11 +27,10 @@ load(File) ->
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PRIVATE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% INTERNAL
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -56,21 +55,18 @@ parse_lines(eof, _, Records) ->
 parse_lines({ok, Line}, File, Records) ->
     StrLine= clean_line(Line),
     NewRecords= case length(StrLine) > 0 of
-	false -> Records;
-	true -> [parse_to_record(StrLine, File, Records) | Records]
+	true -> [parse_to_record(StrLine, File, Records) | Records];
+	false -> Records
     end,
     parse_lines(file:read_line(File), File, NewRecords).
 
 
 
 % the Line has data, so we parse it, build a record, and return it
-parse_to_record(Line, File, Records) ->
+parse_to_record(Line, _, Records) ->
     [Type | Data] = string:tokens(Line, " \t"),
     {ok, PrevType, PrevName} = prev_rec_type(Records),
     {ok, Record} = build_record(Type, Data, {PrevType, PrevName}),
-
-%    parse_lines(file:read_line(File), File, [Record|Records]).
-
     Record.
 
 
@@ -88,10 +84,12 @@ prev_rec_type(List) when is_list(List) ->
 
 
 clean_line(Line) ->
+    %% remove spaces, newlines, and tabs
     Line1= string:strip(Line),
     Line2= string:strip(Line1, both, $\n),
     Line3= string:strip(Line2, both, $\t),
     
+    %% remove comments and return
     FinalLine=Line3,
     CPos= string:chr(FinalLine, $#),
     case CPos of
@@ -102,18 +100,18 @@ clean_line(Line) ->
 
 
 build_record("Rule", Data,_) ->
-    ezic_record:rule(Data);
+    ezic_rule:parse(Data);
 build_record("Zone", Data,_) ->
-    ezic_record:zone(Data);
+    ezic_zone:parse(Data);
 build_record("Link", Data,_) ->
     ezic_record:link(Data);
-build_record(GmtOff, Data, {"Zone", PrevName}) ->
-    ezic_record:zone([PrevName,GmtOff|Data]);
 build_record("Leap", Data,_) ->
     ezic_record:leap(Data);
+build_record(GmtOff, Data, {"Zone", PrevName}) ->
+    ezic_zone:parse([PrevName,GmtOff|Data]);
 
 build_record(Type, Data, PT) ->
-    {error, {badLine, Type, Data, PT}}.
+    erlang:error(badLine, {Type, Data, PT}).
 
 
 

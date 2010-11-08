@@ -2,42 +2,32 @@
 -include("include/ezic.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
-prevnext_day_test_() ->
+
+for_rule_test_() ->
     [
-     ?_assertEqual({2010,11,3}, ezic_date:previous_day("Wed", {2010, 11, 5}))
-     , ?_assertEqual({2010,11,10}, ezic_date:next_day("Wed", {2010, 11, 5}))
+     % last days of months
+     ?_assertEqual({2010, 03, 28}, ezic_date:for_rule(#rule{in=3, on={last, "Sun"}}, 2010))
+     , ?_assertEqual({2010, 11, 30}, ezic_date:for_rule(#rule{in=11, on={last, "Tue"}}, 2010))
+     , ?_assertEqual({2010, 11, 24}, ezic_date:for_rule(#rule{in=11, on={last, "Wed"}}, 2010))
 
-     , ?_assertEqual({2010,11,5}, ezic_date:previous_day("Fri", {2010, 11, 5}))
-     , ?_assertEqual({2010,11,5}, ezic_date:next_day("Fri", {2010, 11, 5}))
+     % days =< or >= absolute dates in given month
+     , ?_assertEqual({2010, 11, 14}, ezic_date:for_rule(#rule{in=11, on=#tzon{day="Sun", filter={geq, 9}}}, 2010))
+     , ?_assertEqual({2010, 11, 7}, ezic_date:for_rule(#rule{in=11, on=#tzon{day="Sun", filter={leq, 9}}}, 2010))
 
-     , ?_assertEqual({2010,11,5}, ezic_date:previous_day("Fri", {2010, 11, 10}))
-     , ?_assertEqual({2010,11,12}, ezic_date:next_day("Fri", {2010, 11, 10}))
-
-     , ?_assertError(no_previous_day, ezic_date:previous_day("Wed", {2010, 11, 2}))
-     , ?_assertError(no_next_day, ezic_date:next_day("Wed", {2010, 11, 25}))
-    ].
-
-firstlast_day_of_test_() ->
-    [
-     ?_assertEqual({2010,11,24}, ezic_date:last_day_of("Wed", 2010, 11))
-     , ?_assertEqual({2010,11,30}, ezic_date:last_day_of("Tue", 2010, 11))
-
-     , ?_assertEqual({2010,11,14}, ezic_date:first_day_limited("Sun", {geq, 8}, 2010, 11))
-     , ?_assertEqual({2010,11,21}, ezic_date:first_day_limited("Sun", {leq, 25}, 2010, 11))
+     % these should fail
+     , ?_assertError(no_previous_day, ezic_date:for_rule(#rule{in=11, on=#tzon{day="Sun", filter={leq, 1}}}, 2010))
+     , ?_assertError(no_next_day, ezic_date:for_rule(#rule{in=11, on=#tzon{day="Sun", filter={geq, 29}}}, 2010))
     ].
 
 
-compare_datetimes_test_() ->
+add_seconds_test_() ->
     [
-     ?_assertNot(ezic_date:compare_datetimes(
-		       {{1997,3,{last, "Sun"}},{tztime,{1,0,0},u}}
-		       , {1997,1,1} ))
+     ?_assertEqual({{2010,11,7},{9,38,01}}, ezic_date:add_seconds({{2010,11,7},{9,38,00}}, 1))
+     , ?_assertEqual({{2010,11,7},{9,38,00}}, ezic_date:add_seconds({{2010,11,7},{9,37,59}}, 1))
+
+     , ?_assertEqual({{2010,11,7},{9,37,59}}, ezic_date:add_seconds({{2010,11,7},{9,38,00}}, -1))
+     , ?_assertError(baddate, ezic_date:add_seconds({{2010,11,nope},{9,38,00}}, -1))
+     , ?_assertError(baddate, ezic_date:add_seconds({2010,11,nope}, -1))
     ].
 
 
-overlap_test_() ->
-    [
-     ?_assert(ezic_date:overlap({1978,only},{{{1977,1,1},#tztime{}}, {{1978,1,1},#tztime{}}}))
-     , ?_assert(ezic_date:overlap({1978,only},{{{1971,1,1},#tztime{}}, {{1978,1,1},#tztime{}}}))
-     , ?_assertNot(ezic_date:overlap({1978,only},{{{1971,1,1},#tztime{}}, {{1977,12,31},#tztime{}}}))
-    ].

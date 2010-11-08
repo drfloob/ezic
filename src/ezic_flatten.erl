@@ -74,11 +74,7 @@ flatten_zones([Z1|_]= AllZones, Flats) ->
 
 
 
-
-
-
-
-% takes zones one-by-one, gathering relevant rules and create flat periods of the same gmt offset (#flatzone)
+% takes zones one-by-one, gathering relevant rules and creating flat periods of the same gmt offset (#flatzone)
 flatten_zone_set(Zones) ->
     flatten_zone_set(?MINFLAT, Zones, []).
 
@@ -91,11 +87,10 @@ flatten_zone_set(Zones) ->
 % assumes a new zone every time it is called
 flatten_zone_set(_, [], Flats) ->
     Flats;
-flatten_zone_set(FromTimeStub, [Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | RestZones] = Zones, Flats) ->
+flatten_zone_set(FromTimeStub, [Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | _RestZones] = _Zones, _Flats) ->
 
     %% we have a flatzone with start times, we populate the base offset
     FromTime= FromTimeStub#flatzone{offset=Offset},
-    
     
 
     %% we gather all rules that _may_ apply (same year)
@@ -103,8 +98,9 @@ flatten_zone_set(FromTimeStub, [Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=
     RelevantRules= ezic_rule:filter(FromTime, UntilTime, Rules),
     SortedRules= lists:sort(fun ezic_rule:sort_ascending/2, RelevantRules),
 
+
     %% Then we plot points, bouncing from rule to rule, ending when the zone ends
-    {ok, NextFromTimeStub, NewFlats}= flatten_zone(FromTime, Z1, SortedRules),
+    {ok, _NextFromTimeStub, _NewFlats}= flatten_zone(FromTime, Z1, SortedRules),
     
     
     not_done.

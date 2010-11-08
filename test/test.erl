@@ -3,6 +3,9 @@
 -include_lib("eunit/include/eunit.hrl").
 
 all() ->
-    eunit:test(ezic_record),
-    eunit:test(ezic_date),
-    eunit:test(ezic_zone).
+    eunit:test(ezic_record)
+    , eunit:test(ezic_date)
+    , eunit:test(ezic_zone)
+    , eunit:test(ezic_parse)
+
+    ,ok.

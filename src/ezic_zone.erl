@@ -3,7 +3,8 @@
 -include_lib("eunit/include/eunit.hrl").
 
 -export([
-	 current/1
+	 parse/1
+	 , current/1
 	 , current_as_of_utc/2
 	 , split_by_name/2
 	 , sort_ascending/2
@@ -14,16 +15,32 @@
 
 
 
+parse([Name,GmtOffS,Rule,FormatS | UntilTokens]) ->
+%    ?debugVal(GmtOffS),
+    GmtOff= ezic_parse:time_val(GmtOffS),
+    Until = ezic_parse:until(UntilTokens),
+    Format= ezic_parse:tz_abbr(FormatS),
+    
+    {ok, #zone{
+       name=Name, gmtoff=GmtOff, rule=Rule,
+       format=Format, until=Until
+      }}.
+
+
+
+
+
+
+
+
+
+
 current(TzName) ->
     current_as_of_utc(erlang:universaltime(), TzName).
 
 current_as_of_utc(UTCDatetime, TzName) ->
     Zones= ezic_db:zones(TzName),
     get_zone_utc(UTCDatetime, Zones).
-
-%%current_as_of_local(_Datetime, _TzName) ->
-%%    not_done.
-
 
 
 
@@ -58,7 +75,7 @@ split_by_name(#zone{name=N}, Zones) ->
 
 
 sort_descending(#zone{until=U1}, #zone{until=U2}) ->
-    ezic_date:compare_datetimes(U2, U1).
+    ezic_date:compare(U2, U1).
 
 sort_ascending(Z1=#zone{}, Z2=#zone{}) ->
     not sort_descending(Z1, Z2).
@@ -67,9 +84,16 @@ sort_ascending(Z1=#zone{}, Z2=#zone{}) ->
 
 % @bug doesn't normalize times. Times are self-relative (to standard time), and Now may come from any timezone unless we're careful about that.
 %% older_zone(#zone{until=Until}, UTCDatetime) ->
-%%     ezic_date:compare_datetimes(Until, UTCDatetime).
+%%     ezic_date:compare(Until, UTCDatetime).
 
 
 
 offset_sec(Zone) ->
     calendar:time_to_seconds((Zone#zone.gmtoff)#tztime.time).
+
+
+
+
+
+
+
