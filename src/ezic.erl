@@ -49,7 +49,8 @@ utc_to_local(UTCDatetime, TzName) ->
 next_timechange(TzName) ->
     next_timechange(erlang:universaltime(), TzName).
 
-next_timechange(UtcDatetime, TzName) ->
+next_timechange(UTCDatetime, TzName) ->
+    UTCDatetime, TzName,
     not_done.
 
 
@@ -63,7 +64,8 @@ next_timechange(UtcDatetime, TzName) ->
 
 
 load(Folder) ->
-    ezic_loader:load(Folder).
+    ezic_loader:load(Folder),
+    ezic_flatten:flatten().
 
 
 dev_start() ->
@@ -106,6 +108,6 @@ time_offset(Zone, Rule) ->
 date_add(Datetime, SecDiff) ->
     ?gs2dt(?dt2gs(Datetime) + SecDiff).    
 
-date_subtract(Datetime, SecDiff) ->
-    ?gs2dt(?dt2gs(Datetime) - SecDiff).
+%% date_subtract(Datetime, SecDiff) ->
+%%     ?gs2dt(?dt2gs(Datetime) - SecDiff).
     

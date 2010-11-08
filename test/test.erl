@@ -4,4 +4,5 @@
 
 all() ->
     eunit:test(ezic_record),
-    eunit:test(ezic_date).
+    eunit:test(ezic_date),
+    eunit:test(ezic_zone).

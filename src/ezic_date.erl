@@ -8,9 +8,13 @@
 -endif.
 
 
+
+
 -export([for/2]).
 -export([month_to_num/1, day_to_num/1]).
 -export([compare_times/2, compare_datetimes/2, normalize/1, overlap/2, date_between/2]).
+
+-export([add_seconds/2, all_times/3]).
 
 
 
@@ -218,3 +222,52 @@ date_between_normal(D1, {D2s, D2e}) ->
 	andalso compare_datetimes_normal(D1, D2e).
     
     
+
+
+add_seconds(Datetime, Seconds) ->
+    calendar:gregorian_seconds_to_datetime(
+      calendar:date_to_gregorian_seconds(Datetime) + Seconds
+     ).
+
+
+
+
+
+% returns {WallTime, StdTime, UtcTime} 
+% where each is a datetime tuple: {{Y,M,D}{HH,MM,SS}}
+
+% universal time given
+all_times(Datetime=#tztime{time=UTCTime, flag=Flag}, Offset, DSTOffset) 
+  when Flag=:=u; Flag=:=g; Flag=:=z ->
+    OSec= calendar:time_to_seconds(Offset),
+    DSTSec= calendar:time_to_seconds(DSTOffset),
+
+    STDTime= add_seconds(UTCTime, OSec),
+    WallTime= add_seconds(STDTime, DSTSec),
+
+    {WallTime, STDTime, UTCTime};
+
+
+% standard time given
+all_times(Datetime=#tztime{time=STDTime, flag=s}, Offset, DSTOffset) ->
+    OSec= calendar:time_to_seconds(Offset),
+    DSTSec= calendar:time_to_seconds(DSTOffset),
+
+    UTCTime= add_seconds(STDTime, -1*OSec),
+    WallTime= add_seconds(STDTime, DSTSec),
+
+    {WallTime, STDTime, UTCTime};
+
+
+% wall time given
+all_times(Datetime=#tztime{time=WallTime, flag=Flag}, Offset, DSTOffset) 
+  when Flag=:=w, Flag=:=undefined ->
+    OSec= calendar:time_to_seconds(Offset),
+    DSTSec= calendar:time_to_seconds(DSTOffset),
+
+    STDTime= add_seconds(WallTime, -1*DSTSec),
+    UTCTime= add_seconds(STDTime, -1*OSec),
+
+    {WallTime, STDTime, UTCTime}.
+
+

@@ -15,8 +15,6 @@ load(File) ->
 	end,
     {ok, Zones, Rules, Leaps, Links} = ezic_compile:separate(Records),
 
-%    ezic_compile:flatten(Zones, Rules).
-
     ezic_db:wipe(),
     ezic_db:init(),
 
@@ -30,6 +28,7 @@ load(File) ->
 
 
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INTERNAL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,7 +37,6 @@ load(File) ->
 
 % returns a list of tzdata records for all files in folder
 % note: assumes every file in the folder is a tzdata file
-% this method does not recurse.
 parse_dir(Folder) ->
     {ok, Files} = file:list_dir(Folder),
     lists:flatten([ parse_file(filename:join(Folder,File)) || File <- Files ]).
@@ -52,30 +50,42 @@ parse_file(File) ->
 
 
 
+
 parse_lines(eof, _, Records) ->
     Records;
 parse_lines({ok, Line}, File, Records) ->
     StrLine= clean_line(Line),
-    case length(StrLine) > 0 of
-	false -> parse_lines(file:read_line(File), File, Records);
-	true -> parse_lines_2(StrLine, File, Records)
-    end.
+    NewRecords= case length(StrLine) > 0 of
+	false -> Records;
+	true -> [parse_to_record(StrLine, File, Records) | Records]
+    end,
+    parse_lines(file:read_line(File), File, NewRecords).
 
 
-parse_lines_2(Line, File, Records) ->
-    %?debug("Line: ~p", [Line]),
+
+% the Line has data, so we parse it, build a record, and return it
+parse_to_record(Line, File, Records) ->
     [Type | Data] = string:tokens(Line, " \t"),
     {ok, PrevType, PrevName} = prev_rec_type(Records),
     {ok, Record} = build_record(Type, Data, {PrevType, PrevName}),
-    parse_lines(file:read_line(File), File, [Record|Records]).
+
+%    parse_lines(file:read_line(File), File, [Record|Records]).
+
+    Record.
 
 
+
+
+% retrieves the previous record type, in case Zone continuations occur (multiline)
 prev_rec_type([]) ->
     {ok, null, null};
 prev_rec_type([#zone{name=Name}|_]) ->
     {ok, "Zone", Name};
 prev_rec_type(List) when is_list(List) ->
     {ok, void, void}.
+
+
+
 
 clean_line(Line) ->
     Line1= string:strip(Line),
@@ -104,4 +114,7 @@ build_record("Leap", Data,_) ->
 
 build_record(Type, Data, PT) ->
     {error, {badLine, Type, Data, PT}}.
+
+
+
 

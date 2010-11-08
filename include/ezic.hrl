@@ -17,7 +17,7 @@
 
 
 % a flattened zone record, giving specific information for a specific time range.
--record(flatzone, {tzname, tzrule, from, to, gmtoff}).
+-record(flatzone, {tzname, wall_from, wall_to, std_from, std_to, utc_from, utc_to, offset}).
 
 
 
