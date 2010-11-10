@@ -12,3 +12,23 @@ split_by_name_test_() ->
      , ?_assertEqual({BZones, AZones}, ezic_zone:split_by_name(B, AllZones))
      , ?_assertEqual({[], AllZones}, ezic_zone:split_by_name(#zone{name=c}, AllZones))
     ].
+
+
+
+project_end_test_() ->
+    [
+     ?_assertEqual({{2010,11,10},{16,20,0}}, 
+		   ezic_zone:project_end(
+		     #zone{until={{2010,11,10},#tztime{time={10,20,0}, flag=w}}, gmtoff={-7,0,0}}
+		    , {1,0,0}))
+
+     , ?_assertEqual({{2010,11,10},{16,20,0}}, 
+		   ezic_zone:project_end(
+		     #zone{until={{2010,11,10},#tztime{time={9,20,0}, flag=s}}, gmtoff={-7,0,0}}
+		    , {1,0,0}))
+
+     , ?_assertEqual({{2010,11,10},{16,20,0}}, 
+		   ezic_zone:project_end(
+		     #zone{until={{2010,11,10},#tztime{time={16,20,0}, flag=u}}, gmtoff={-7,0,0}}
+		    , {1,0,0}))
+    ].

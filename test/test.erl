@@ -7,5 +7,6 @@ all() ->
     , eunit:test(ezic_date)
     , eunit:test(ezic_zone)
     , eunit:test(ezic_parse)
+    , eunit:test(ezic_rule)
 
     ,ok.

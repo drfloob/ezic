@@ -145,7 +145,7 @@ time_flag_rev([F|RTime]) when F =:= $g; F =:= $z ->
 time_flag_rev(X=[F|_]) when F-48 < 0; F-48 > 9 ->
     erlang:error(badtime, lists:reverse(X));
 time_flag_rev(RTime) ->
-    {undefined, RTime}.
+    {w, RTime}.
 
 
 

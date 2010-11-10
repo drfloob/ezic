@@ -3,11 +3,6 @@
 -include_lib("eunit/include/eunit.hrl").
 
 
--ifdef(TEST).
--compile([export_all]).
--endif.
-
-
 -export([
 	 link/1
 	 , leap/1

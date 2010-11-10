@@ -88,55 +88,28 @@ flatten_zone_set(Zones) ->
 % assumes a new zone every time it is called
 flatten_zone_set(_, [], Flats) ->
     Flats;
-flatten_zone_set(FromTimeStub, [Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | _RestZones] = _Zones, _Flats) ->
+flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}, [Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | _RestZones], _Flats) ->
 
     %% we have a flatzone with start times, we populate the base offset
     FromTime= FromTimeStub#flatzone{offset=Offset},
+    %% note that dst offset default to {0,0,0} in #flatzone{}
     
 
     %% we gather all rules that _may_ apply (same year)
     Rules= ezic_db:rules(RuleName),
-    RelevantRules= ezic_rule:filter(FromTime, UntilTime, Rules),
-    SortedRules= lists:sort(fun ezic_rule:sort_ascending/2, RelevantRules),
-
-
-    %% Then we plot points, bouncing from rule to rule, ending when the zone ends
-    {ok, _NextFromTimeStub, _NewFlats}= flatten_zone(FromTime, Z1, SortedRules),
+    RuleDates= lists:foldl(
+		 fun(R, Acc)-> 
+			 case ezic_rule:project_next(R, Offset, DSTOffset, UTCFrom) of
+			     none -> Acc;
+			     D -> [{D,R} | Acc]
+			 end
+		 end
+		 ,[], Rules),
+    AllDates= [{ezic_zone:project_end(Z1, DSTOffset), Z1} | RuleDates],
     
     
+
     not_done.
-
-
-
-
-
-
-
-
-
-
-% flattens a single zone into multiple flatzones.
-% FromTime has its *_from fields and offset field populated. (it should anyway)
-% @todo invalid input checking
-% Rules are sorted
-flatten_zone(BaseFlat, Zone, Rules) ->
-    flatten_zone(BaseFlat, Zone, Rules, []).
-    
-flatten_zone(BaseFlat, Zone=#zone{until=Until, gmtoff=Offset}, Rules, Flats) ->
-    case ezic_rule:next_event(BaseFlat, Until, Offset, Rules) of
-         % is this enough information to compare all times corectly?
-	{end_until, EndTimes} ->
-	    NewFlats= [end_flat(BaseFlat, EndTimes) | Flats],
-	    NewFrom= make_next_flat(EndTimes),
-	    {ok, NewFrom, NewFlats}; % base case
-	
-	{end_rule, EndTimes, NextOffset} ->
-	    NewFlats= [end_flat(BaseFlat, EndTimes) | Flats],
-	    NewFrom= make_next_flat(EndTimes, NextOffset),
-	    flatten_zone(NewFrom, Zone, Rules, NewFlats) % tail recursion
-
-	end.
-
 
 
 

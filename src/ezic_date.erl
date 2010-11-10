@@ -7,7 +7,7 @@
 -export([
 	 % rule-specific
 	 for_rule/2
-	 , for_rule_zone/3
+	 , for_rule_utc/4
 
 
 	 % converters
@@ -17,7 +17,12 @@
 
 	 % date math
 	 , add_seconds/2
+	 , add_offset/2
 	 , all_times/3
+
+	 % comparisons
+	 , compare/2
+	 , equal/2
 	]).
 
 
@@ -27,26 +32,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% returns {Y,M,D} for a rule and Year
-for_rule(#rule{in=M, on={last, D}}, Y) ->
-    last_day_of(D, Y,M);
-for_rule(#rule{in=M, on=#tzon{day=Day, filter=Filter}}, Y) ->
-    first_day_limited(Day, Filter, Y,M).
+% returns RELATIVE {Y,M,D} for a rule and Year
+for_rule(#rule{in=M, on=D, at=At}, Y) when is_integer(D) ->
+    {{Y,M,D}, At};
+for_rule(#rule{in=M, on={last, D}, at=At}, Y) ->
+    {last_day_of(D, Y,M), At};
+for_rule(#rule{in=M, on=#tzon{day=Day, filter=Filter}, at=At}, Y) ->
+    {first_day_limited(Day, Filter, Y,M), At}.
 
 
-
-
-% for_rule(#rule{}, Zone, Year) -> {WallTime, STDTime, UTCTime}
-% returns the date set for a given rule and year
-% same for all timezones.
-for_rule_zone(#rule{in=M, on={last, D}, at=_Time, save=_DSTOffset}, _Zone=#zone{gmtoff=_Offset}, Y) ->
-    _LDO= last_day_of(D, Y,M),
-    
-    not_done;
-for_rule_zone(#rule{in=M, on=#tzon{day=Day, filter=Filter}}, _Zone, Y) ->
-    first_day_limited(Day, Filter, Y,M),
-
-    not_done.
+% returns UTC datetime for rule, offset, and year
+for_rule_utc(Rule, Offset, DSTOffset, Year) ->
+    DT= for_rule(Rule, Year),
+    {_,_,UTCDatetime} = all_times(DT, Offset, DSTOffset),
+    UTCDatetime.
 
 
 
@@ -89,47 +88,83 @@ add_seconds(Datetime, Seconds) ->
 
 
 
+add_offset(Datetime, Offset) ->
+    Sec= calendar:time_to_seconds(Offset),
+    add_seconds(Datetime, Sec).
+
+
 
 % returns {WallTime, StdTime, UtcTime} 
 % where each is a datetime tuple: {{Y,M,D}{HH,MM,SS}}
 
 % universal time given
-all_times(#tztime{time=UTCTime, flag=Flag}, Offset, DSTOffset) 
+all_times({Date, #tztime{time=UTCTime, flag=Flag}}, Offset, DSTOffset) 
   when Flag=:=u; Flag=:=g; Flag=:=z ->
+    UTCDatetime= {Date, UTCTime},
+
     OSec= calendar:time_to_seconds(Offset),
     DSTSec= calendar:time_to_seconds(DSTOffset),
 
-    STDTime= add_seconds(UTCTime, OSec),
+    STDTime= add_seconds(UTCDatetime, OSec),
     WallTime= add_seconds(STDTime, DSTSec),
 
-    {WallTime, STDTime, UTCTime};
+    {WallTime, STDTime, UTCDatetime};
 
 
 % standard time given
-all_times(#tztime{time=STDTime, flag=s}, Offset, DSTOffset) ->
+all_times({Date, #tztime{time=STDTime, flag=s}}, Offset, DSTOffset) ->
+    STDDatetime= {Date, STDTime},
+
     OSec= calendar:time_to_seconds(Offset),
     DSTSec= calendar:time_to_seconds(DSTOffset),
 
-    UTCTime= add_seconds(STDTime, -1*OSec),
-    WallTime= add_seconds(STDTime, DSTSec),
+    UTCTime= add_seconds(STDDatetime, -1*OSec),
+    WallTime= add_seconds(STDDatetime, DSTSec),
 
-    {WallTime, STDTime, UTCTime};
+    {WallTime, STDDatetime, UTCTime};
 
 
 % wall time given
-all_times(#tztime{time=WallTime, flag=Flag}, Offset, DSTOffset) 
-  when Flag=:=w, Flag=:=undefined ->
+all_times({Date, #tztime{time=WallTime, flag=Flag}}, Offset, DSTOffset) 
+  when Flag=:=w; Flag=:=undefined ->
+    WallDatetime= {Date, WallTime},
+
     OSec= calendar:time_to_seconds(Offset),
     DSTSec= calendar:time_to_seconds(DSTOffset),
 
-    STDTime= add_seconds(WallTime, -1*DSTSec),
+    STDTime= add_seconds(WallDatetime, -1*DSTSec),
     UTCTime= add_seconds(STDTime, -1*OSec),
 
-    {WallTime, STDTime, UTCTime}.
+    {WallDatetime, STDTime, UTCTime}.
 
 
 
 
+% returns true if DT1 =< DT2. False otherwise. can be used with lists:sort/2
+% both times are assumed to be in the same zone/DST context
+compare(DT1={{Y1,M1,D1},{HH1,MM1,SS1}}, DT2={{Y2,M2,D2},{HH2,MM2,SS2}}) 
+when is_integer(Y1), is_integer(Y2)
+     , is_integer(M1), is_integer(M2) 
+     , is_integer(D1), is_integer(D2) 
+     , is_integer(HH1), is_integer(HH2) 
+     , is_integer(MM1), is_integer(MM2) 
+     , is_integer(SS1), is_integer(SS2) 
+     ->
+    
+    DT1 =< DT2.
+
+% returns true if DT1 =:= DT2. False otherwise
+% both times are assumed to be in the same zone/DST context
+equal(DT1={{Y1,M1,D1},{HH1,MM1,SS1}}, DT2={{Y2,M2,D2},{HH2,MM2,SS2}}) 
+when is_integer(Y1), is_integer(Y2)
+     , is_integer(M1), is_integer(M2) 
+     , is_integer(D1), is_integer(D2) 
+     , is_integer(HH1), is_integer(HH2) 
+     , is_integer(MM1), is_integer(MM2) 
+     , is_integer(SS1), is_integer(SS2) 
+     ->
+
+    DT1 =:= DT2.
 
 
 
@@ -210,11 +245,4 @@ add_days_in_month(Days, Date={Y,M,D}) ->
 % INTERNAL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
-normalize(_Datetime) ->
-    not_done.
-
-compare_normal(_DT1, _DT2) ->
-    not_done.
 

@@ -10,6 +10,8 @@
 	 , sort_ascending/2
 	 , sort_descending/2
 	 , offset_sec/1
+
+	 , project_end/2
 	]).
 
 
@@ -93,6 +95,11 @@ offset_sec(Zone) ->
 
 
 
+
+% returns the UTC datetime projected for zone end (given current DST Offset)
+project_end(#zone{until=Until, gmtoff=Offset}, DSTOffset) ->
+    {_,_,UTCDatetime}= ezic_date:all_times(Until, Offset, DSTOffset),
+    UTCDatetime.
 
 
 
