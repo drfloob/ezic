@@ -25,6 +25,11 @@ flatten() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+% recursively processes sets of similar zones until they're all done, passing zone sets to flatten_zone_set/1
+flatten_zones(Zones) ->
+    flatten_zones(Zones, []).
+
+
 
 make_next_flat(#flatzone{wall_to=W, std_to=S, utc_to=U, offset=O}) ->
     make_next_flat({W,S,U}, O);
@@ -52,10 +57,6 @@ end_flat(Flat=#flatzone{}, {W,S,U}) ->
 
 
 
-
-% recursively processes sets of similar zones until they're all done, passing zone sets to flatten_zone_set/1
-flatten_zones(Zones) ->
-    flatten_zones(Zones, []).
 
 flatten_zones([], Flats) ->
     Flats;

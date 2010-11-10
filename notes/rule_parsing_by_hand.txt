@@ -1,0 +1,101 @@
+New York:
+
+zone1.
+  offset= {-4, 56, 02}
+  ends= {{1883, 11, 18}, {12,03,57}, w}
+        or {{1883, 11, 18}, {12,03,57}, s}
+        or {{1883, 11, 18}, {16,59,59}, u}
+
+
+from minimum
+  dst= none
+  
+  % zone change
+  end= zone1.ends
+
+
+
+
+zone2.
+  offset= {-5,0,0}
+  ends= {{1920,1,1}, {0,0,0}, w}
+
+
+from zone1.ends+1sec
+  dst= none
+  
+  % dst event
+  end= {{1918,3,31}, {1,59,59}, w}
+       or {{1918,3,31}, {1,59,59}, s}
+       or {{1918,3,31}, {6,59,59}, u}
+
+
+from {{1918,3,31}, {7,0,0}, u}
+  dst= {1,0,0}
+
+  % dst event
+  end= {{1918,10,27}, {1,59,59}, w}
+       or {{1918,10,27}, {0,59,59}, s}
+       or {{1918,10,27}, {5,59,59}, u}
+
+
+from {{1918,10,27}, {6,0,0}, u}
+  dst= none
+
+  % dst event
+  end= {{1919,3,30}, {1,59,59}, w}
+       or {{1919,3,30}, {1,59,59}, s}
+       or {{1919,3,30}, {6,59,59}, u}
+  
+
+from {{1919,3,30}, {7,0,0}, u}
+  dst= {1,0,0}
+
+  % dst event
+  end= {{1919,10,26}, {1,59,59}, w}
+       or {{1919,10,26}, {0,59,59}, s}
+       or {{1919,10,26}, {5,59,59}, u}
+
+
+from {{1919,10,26}, {5,59,59}, u}
+  dst= none
+
+  % zone end
+  end= {{1919,12,31}, {23,59,59}, w}
+       or {{1919,12,31}, {23,59,59}, s}
+       or {{1920,1,1}, {4,59,59}, u}
+
+
+zone3.
+  offset= {-5,0,0}
+  ends= {{1942,1,1}, {0,0,0}, w}
+
+from {{1920,1,1}, {5,0,0}, u}
+  dst= none %from previous
+  
+
+
+GENERAL PATTERN
+
+in zoneX.
+  offset= {HH,MM,SS}
+  end= {{Y,M,D},{HH,MM,SS}, w} %% usually wall-time, can be otherwise
+
+from previous.ends +1sec
+  dst= previous.dst
+
+  calculate all times for begin (w/s/u)
+
+  foreach rule:
+    given begin, current dst and offset,
+     - calculate oldest change > begin %% may be none
+  nextRule= the rule with the earliest of these dates
+
+  if nextRule.start > zoneX.end:
+    end= zoneX.end-1sec
+    next_zone (offset & end)
+  else:
+    end= oldest.time-1sec
+
+  nextDst= nextRule.dst
+  nextBegin= end+1sec
