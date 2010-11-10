@@ -15,20 +15,20 @@ split_by_name_test_() ->
 
 
 
-project_end_test_() ->
+project_end_utc_test_() ->
     [
      ?_assertEqual({{2010,11,10},{16,20,0}}, 
-		   ezic_zone:project_end(
+		   ezic_zone:project_end_utc(
 		     #zone{until={{2010,11,10},#tztime{time={10,20,0}, flag=w}}, gmtoff={-7,0,0}}
 		    , {1,0,0}))
 
      , ?_assertEqual({{2010,11,10},{16,20,0}}, 
-		   ezic_zone:project_end(
+		   ezic_zone:project_end_utc(
 		     #zone{until={{2010,11,10},#tztime{time={9,20,0}, flag=s}}, gmtoff={-7,0,0}}
 		    , {1,0,0}))
 
      , ?_assertEqual({{2010,11,10},{16,20,0}}, 
-		   ezic_zone:project_end(
+		   ezic_zone:project_end_utc(
 		     #zone{until={{2010,11,10},#tztime{time={16,20,0}, flag=u}}, gmtoff={-7,0,0}}
 		    , {1,0,0}))
     ].

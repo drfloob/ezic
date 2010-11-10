@@ -5,8 +5,10 @@
 
 
 -export([
+	 normalize/1
+
 	 % rule-specific
-	 for_rule/2
+	 , for_rule/2
 	 , for_rule_utc/4
 
 
@@ -19,6 +21,7 @@
 	 , add_seconds/2
 	 , add_offset/2
 	 , all_times/3
+	 , m1s/1
 
 	 % comparisons
 	 , compare/2
@@ -30,6 +33,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PUBLIC API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% converts any sane date part into a complete datetime
+% USED EXCLUSIVELY FOR COMPARISONS. The resulting "datetime" values may not
+%  represent true dates or times.
+normalize(A) when is_atom(A) ->
+    A;
+normalize(Y) when is_integer(Y) ->
+    {{Y,1,1}, #tztime{}};
+normalize(Date={Y,M,D}) 
+  when is_integer(Y), is_integer(M), is_integer(D) ->
+    {Date, #tztime{}};
+normalize(R={{Y,M,D}, #tztime{}}) ->
+    R.
 
 
 % returns RELATIVE {Y,M,D} for a rule and Year
@@ -97,6 +114,11 @@ add_offset(Datetime, Offset) ->
 % returns {WallTime, StdTime, UtcTime} 
 % where each is a datetime tuple: {{Y,M,D}{HH,MM,SS}}
 
+
+% @todo ensure X is in list: max, maximum, min, minimum, current, ...?
+all_times(X,_,_) when is_atom(X) ->
+    {X,X,X};
+
 % universal time given
 all_times({Date, #tztime{time=UTCTime, flag=Flag}}, Offset, DSTOffset) 
   when Flag=:=u; Flag=:=g; Flag=:=z ->
@@ -152,6 +174,8 @@ when is_integer(Y1), is_integer(Y2)
      ->
     
     DT1 =< DT2.
+
+
 
 % returns true if DT1 =:= DT2. False otherwise
 % both times are assumed to be in the same zone/DST context
@@ -238,6 +262,19 @@ add_days_in_month(Days, Date={Y,M,D}) ->
 	    end
     end.
 		    
+
+
+
+m1s(D= {{Y,M,D},{HH,MM,SS}}) 
+  when is_integer(Y), is_integer(M), is_integer(D)
+     , is_integer(HH), is_integer(MM), is_integer(SS) ->
+    
+    calendar:gregorian_seconds_to_datetime(calendar:datetime_to_gregorian_seconds(D) - 1).
+
+
+% @todo type checking
+m1s(W,S,U) when is_tuple(W), is_tuple(S), is_tuple(U) ->
+    {m1s(W), m1s(S), m1s(U)}.
 	    
 
 
