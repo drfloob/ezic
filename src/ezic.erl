@@ -49,7 +49,7 @@ load(Folder) ->
 
 
 dev_start() ->
-    ezic:load(filename:join("priv","tzdata")),
+%    ezic:load(filename:join("priv","tzdata")),
     ezic_flatten:flatten().
 
 

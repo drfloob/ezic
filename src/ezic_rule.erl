@@ -26,6 +26,8 @@ parse([Name,FromS,ToS,_Type,InS,OnS,AtS,SaveS,Letters]) ->
 
 % returns the projected date of the next "rule event" in UTC time,
 %  after the given UTCDatetime, with the given the zone Offset and current DST offset.
+project_next(Rule=#rule{from=RFrom, to=RTo}, Offset, DSTOffset, UTCAfter=minimum) ->
+    ezic_date:for_rule_utc(Rule, Offset, DSTOffset, RFrom);
 project_next(Rule=#rule{from=RFrom, to=RTo}, Offset, DSTOff, UTCAfter={{AY,_,_},_}) ->
     AllYears= years(Rule),
     GoodYears= years_after(AY, AllYears),
@@ -43,7 +45,7 @@ years(Rule=#rule{from=From, to=only}) ->
 years(Rule=#rule{from=From, to=To}) ->
     try lists:seq(From, To)
     catch error:function_clause ->
-	    erlang:error(bad_year_range)
+	    erlang:error(bad_year_range, [From, To])
     end.
 
 % returns the years from the list that are greater than OR equal to Y

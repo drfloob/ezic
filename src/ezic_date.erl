@@ -10,6 +10,7 @@
 	 % rule-specific
 	 , for_rule/2
 	 , for_rule_utc/4
+	 , for_rule_all/4
 
 
 	 % converters
@@ -58,10 +59,14 @@ for_rule(#rule{in=M, on=#tzon{day=Day, filter=Filter}, at=At}, Y) ->
     {first_day_limited(Day, Filter, Y,M), At}.
 
 
+for_rule_all(Rule, Offset, DSTOffset, Year) ->
+    DT= for_rule(Rule, Year),
+    all_times(DT, Offset, DSTOffset).
+    
+
 % returns UTC datetime for rule, offset, and year
 for_rule_utc(Rule, Offset, DSTOffset, Year) ->
-    DT= for_rule(Rule, Year),
-    {_,_,UTCDatetime} = all_times(DT, Offset, DSTOffset),
+    {_,_,UTCDatetime} = for_rule_all(Rule, Offset, DSTOffset, Year),
     UTCDatetime.
 
 
@@ -160,6 +165,14 @@ all_times({Date, #tztime{time=WallTime, flag=Flag}}, Offset, DSTOffset)
     {WallDatetime, STDTime, UTCTime}.
 
 
+
+
+compare(_, current) ->
+    true;
+compare(current, current) ->
+    true;
+compare(current, _) ->
+    false;
 
 
 % returns true if DT1 =< DT2. False otherwise. can be used with lists:sort/2
@@ -265,12 +278,14 @@ add_days_in_month(Days, Date={Y,M,D}) ->
 
 
 
-m1s(D= {{Y,M,D},{HH,MM,SS}}) 
+m1s(Date= {{Y,M,D},{HH,MM,SS}}) 
   when is_integer(Y), is_integer(M), is_integer(D)
      , is_integer(HH), is_integer(MM), is_integer(SS) ->
     
-    calendar:gregorian_seconds_to_datetime(calendar:datetime_to_gregorian_seconds(D) - 1).
+    calendar:gregorian_seconds_to_datetime(calendar:datetime_to_gregorian_seconds(Date) - 1);
 
+m1s({WD, SD, UD}) ->
+    {m1s(WD), m1s(SD), m1s(UD)}.
 
 % @todo type checking
 m1s(W,S,U) when is_tuple(W), is_tuple(S), is_tuple(U) ->
