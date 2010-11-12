@@ -31,6 +31,11 @@ project_end_utc_test_() ->
 		   ezic_zone:project_end_utc(
 		     #zone{until={{2010,11,10},#tztime{time={16,20,0}, flag=u}}, gmtoff={-7,0,0}}
 		    , {1,0,0}))
+
+
+     %% previously failing for "Asia/Irkutsk"
+     , ?_assertEqual({{1879,12,31},{17,2,40}}, ezic_zone:project_end_utc(
+					#zone{until={1880,1,1}, gmtoff={6,57,20}}, {0,0,0}))
     ].
 
 
