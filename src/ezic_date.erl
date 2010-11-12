@@ -51,7 +51,8 @@ normalize(R={{_,_,_}, #tztime{}}) ->
     R.
 
 
-% returns RELATIVE {Y,M,D} for a rule and Year
+%% returns RELATIVE datetime for a rule and Year
+%%   -> {{Y,M,D},#tztime{}} | {{Y,M,D},{HH,MM,SS}}
 for_rule(#rule{in=M, on=D, at=At}, Y) when is_integer(D) ->
     {{Y,M,D}, At};
 for_rule(#rule{in=M, on={last, D}, at=At}, Y) ->
@@ -60,12 +61,14 @@ for_rule(#rule{in=M, on=#tzon{day=Day, filter=Filter}, at=At}, Y) ->
     {first_day_limited(Day, Filter, Y,M), At}.
 
 
+%% returns set of ALL datetimes for a rule, given the gmt offset and
+%% current dst offset.
 for_rule_all(Rule, Offset, DSTOffset, Year) ->
     DT= for_rule(Rule, Year),
     all_times(DT, Offset, DSTOffset).
     
 
-% returns UTC datetime for rule, offset, and year
+% returns UTC datetime for rule, offset, dst offset, and year
 for_rule_utc(Rule, Offset, DSTOffset, Year) ->
     {_,_,UTCDatetime} = for_rule_all(Rule, Offset, DSTOffset, Year),
     UTCDatetime.
@@ -278,16 +281,20 @@ add_days_in_month(Days, Date={Y,M,D}) ->
 		    
 
 
-
+%% subtracts 1 second from a single datetime
+% @todo type checking
 m1s(Date= {{Y,M,D},{HH,MM,SS}}) 
   when is_integer(Y), is_integer(M), is_integer(D)
      , is_integer(HH), is_integer(MM), is_integer(SS) ->
     
     calendar:gregorian_seconds_to_datetime(calendar:datetime_to_gregorian_seconds(Date) - 1);
 
+%% subtracts 1 second from all datetimes
+% @todo type checking
 m1s({WD, SD, UD}) ->
     {m1s(WD), m1s(SD), m1s(UD)}.
 
+%% subtracts 1 second from all datetimes
 % @todo type checking
 m1s(W,S,U) when is_tuple(W), is_tuple(S), is_tuple(U) ->
     {m1s(W), m1s(S), m1s(U)}.
