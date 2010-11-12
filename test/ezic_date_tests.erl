@@ -58,3 +58,10 @@ add_seconds_test_() ->
     ].
 
 
+
+
+compare_test_() ->
+    [
+     ?_assert(ezic_date:compare({2011,12,12}, current))
+     , ?_assertNot(ezic_date:compare(current, {2099,12,12})) % is this the right behavior?
+    ].

@@ -60,18 +60,19 @@ flatten_zone_set(Zones) ->
 %
 % assumes a new zone every time it is called
 flatten_zone_set(_, [], Flats) ->
-      Flats;
+    erlang:error(debug_quit),
+    Flats;
 flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
 		 , Zones %[Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | _RestZones], 
-		 , _Flats) ->
+		 , Flats) ->
 
-    [Zone | _RestZones] = ezic_zone:next(Zones, UTCFrom, DSTOffset),
+    [Zone | RestZones] = ezic_zone:next(Zones, UTCFrom, DSTOffset),
     #zone{rule=RuleName, until=_UntilTime, gmtoff=Offset}=Zone,
 
     %% we have a flatzone with start times; must populate the base gmt offset
-    FromTime= FromTimeStub#flatzone{offset=Offset},
+    FromTime= FromTimeStub#flatzone{offset=Offset, tzname=Zone#zone.name},
     %% if this is the first run, DST offset is {0,0,0}
-    %% if this is a recursion, DST offset is the previous zone's DST offset
+    %% if this is a recursion, DST offset is the previous zone's last DST offset
     
 
     %% we gather all rules that _may_ apply (same year)
@@ -79,38 +80,27 @@ flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
     
     
     %% tack the date onto the zone, so we can see if the zone ends before a rule does
-    ZoneWithDate= {ezic_zone:project_end_utc(Zone, DSTOffset), Zone},
+    TempZoneEndUTC= ezic_zone:project_end_utc(Zone, DSTOffset),
+    ZoneWithDate= {TempZoneEndUTC, Zone},
 
 
     ?debugVal(FromTime),
     ?debugVal(ZoneWithDate),
     ?debugVal(Rules),
 
-    RuleFlats= flatten_rule_set(FromTime, ZoneWithDate, Rules, []),
+    {RuleFlats, LastFlat, EndingDST}= flatten_rule_set(FromTime, ZoneWithDate, Rules, []),
     ?debugVal(RuleFlats),
-
-    %% %% and add normalized (possibly inaccurate) dates for sorting purposes
-    %% %% note this may be empty
-    %% RulesWithDates= lists:foldl(
-    %% 		 fun(R, Acc)-> 
-    %% 			 case ezic_rule:project_next(R, Offset, DSTOffset, UTCFrom) of
-    %% 			     none -> Acc;
-    %% 			     D -> [{D,R} | Acc]
-    %% 			 end
-    %% 		 end
-    %% 		 ,[], Rules),
-
-    %% [NextEventWithDate | RestWithDates]= lists:sort(RulesAndZoneWithDates),
-
-    %% {_,NextEvent}= NextEventWithDate,
-    %% {EndFlat, NextFlat}= finish_and_start_flat(FromTime, NextEvent, Offset, DSTOffset),
-    %% NewFlats= [EndFlat | Flats],
+    ?debugVal(LastFlat),
+    ?debugVal(EndingDST),
     
-    %% RestZones= [Z || {_,Z} <- RestWithDates],
+    %% rules have been exhausted, and zone is ending.
+    {FinalFlat, NextFlat}= finish_and_start_flat(LastFlat, Zone, EndingDST),
+    ?debugVal(FinalFlat),
+    FinalFlats= lists:merge([[FinalFlat], RuleFlats, Flats]),
+    ?debugVal(FinalFlats),
 
-    %% flatten_zone_set(NextFlat, RestZones, NewFlats).
     
-    not_done.
+    flatten_zone_set(NextFlat, RestZones, FinalFlats).
 
 
 
@@ -135,7 +125,12 @@ flatten_rule_set(FlatStart=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset, offs
     
     ?debugVal(RulesWithDates),
 
-    [{EndingRuleDate, EndingRule} | _]= lists:sort(RulesWithDates),
+    {EndingRuleDate, EndingRule}= 
+	case length(RulesWithDates) > 0 of
+	    false -> {maximum, none};
+	    true -> hd(lists:sort(RulesWithDates))
+	end,
+
     {ZoneDate, _Zone}= ZoneWithDate,
 
     ?debugVal(EndingRuleDate),
@@ -149,32 +144,40 @@ flatten_rule_set(FlatStart=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset, offs
 	    flatten_rule_set(NextFlat, ZoneWithDate, Rules, NewFlats);
 	false ->
 	    %% new zone is handled in the caller: flatten_zone_set
-	    Flats
+	    {Flats, FlatStart, DSTOffset}
     end.
 
 
 
 
 
-finish_and_start_flat(FlatStub=#flatzone{utc_from=_UTCFrom}, EndingRule=#rule{}, _EndingRuleDate={{ERDY,_,_},_}, Offset, DSTOffset) ->
+finish_and_start_flat(FlatStub=#flatzone{utc_from=_UTCFrom}, NewRule=#rule{save=NewDSTSave}, _EndingRuleDate={{ERDY,_,_},_}, Offset, DSTOffset) ->
     %% @todo for_rule_all was already called in a loop earlier. use those values instead.
-    NewFlatStartDates={WD, SD, UD}=  ezic_date:for_rule_all(EndingRule, Offset, DSTOffset, ERDY),
+    NewFlatStartDates={WD, SD, UD}=  ezic_date:for_rule_all(NewRule, Offset, DSTOffset, ERDY),
     {WDm, SDm, UDm}= ezic_date:m1s(NewFlatStartDates),
 
     EndFlat= ?ENDFLAT(FlatStub, WDm, SDm, UDm, DSTOffset),
     NewFlat1= ?FLAT(WD, SD, UD),
-    NewFlat2= NewFlat1#flatzone{offset=Offset},
+    NewFlat2= NewFlat1#flatzone{offset=Offset, dstoffset=NewDSTSave, tzname=EndFlat#flatzone.tzname},
     
     FinalNewFlat= NewFlat2,
+
+    ?debugVal(EndFlat),
+    ?debugVal(FinalNewFlat),
+
     {EndFlat, FinalNewFlat}.
 
 
+finish_and_start_flat(FlatStub=#flatzone{}, Zone=#zone{}, EndingDST) ->
+    EndDatesP1={WD,SD,UD}= ezic_zone:project_end(Zone, EndingDST),
+    {WDm, SDm, UDm}= ezic_date:m1s(EndDatesP1),
+    EndFlat= ?ENDFLAT(FlatStub, WDm, SDm, UDm, EndingDST),
+    
+    NextFlat1= ?FLAT(WD,SD,UD),
+    NextFlat2= NextFlat1#flatzone{dstoffset=EndingDST},
+    RetNextFlat= NextFlat2,
 
-%% finish_and_start_flat(Flat=#flatzone{}, Zone=#zone{}, _Offset, DSTOffset) ->
-%%     NextStart= {WT, ST, UT}= ezic_zone:project_end(Zone, DSTOffset),
-%%     {MWT, MST, MUT}= ezic_date:m1s(NextStart),
-%%     EndFlat= ?ENDFLAT(Flat, MWT, MST, MUT),
-%%     NextFlat= ?FLAT(WT, ST, UT),
-%%     {EndFlat, NextFlat};
+    ?debugVal(EndFlat),
+    ?debugVal(RetNextFlat),
 
-
+    {EndFlat, RetNextFlat}.

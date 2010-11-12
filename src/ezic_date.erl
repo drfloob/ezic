@@ -37,9 +37,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% converts any sane date part into a complete datetime
-% USED EXCLUSIVELY FOR COMPARISONS. The resulting "datetime" values may not
-%  represent true dates or times.
+%% converts any sane date part into a complete datetime
+%% USED EXCLUSIVELY FOR COMPARISONS. The resulting "datetime" values may not
+%%  represent true dates or times.
+%% @todo ensure atom is valid
 normalize(A) when is_atom(A) ->
     A;
 normalize(Y) when is_integer(Y) ->
@@ -176,6 +177,14 @@ compare(_, current) ->
 compare(current, current) ->
     true;
 compare(current, _) ->
+    false;
+
+
+compare(_, X) when X=:=max; X=:=maximum ->
+    true;
+compare(X, X) when X=:=max; X=:=maximum ->
+    true;
+compare(X, _) when X=:=max; X=:=maximum ->
     false;
 
 

@@ -42,6 +42,8 @@ project_next(Rule=#rule{}, Offset, DSTOff, UTCAfter={{AY,_,_},_}) ->
 % returns the sorted list of years a rule existed for.
 years(#rule{from=From, to=only}) ->
     [From];
+years(#rule{from=From, to=X}) when X=:=max; X=:=maximum->
+    [From,9999]; % let's hope this isn't used past year 9999
 years(#rule{from=From, to=To}) ->
     try lists:seq(From, To)
     catch error:function_clause ->
