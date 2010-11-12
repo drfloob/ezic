@@ -17,7 +17,7 @@
 
 flatten() ->
     AllZones= ezic_db:get_all(zone),
-    flatten_zones(AllZones),
+    flatten_all_zones(AllZones),
     not_done.
 
 
@@ -28,15 +28,15 @@ flatten() ->
 
 % recursively processes sets of similar zones until they're all done,
 % passing zone sets to flatten_zone_set/1
-flatten_zones(Zones) ->
-    flatten_zones(Zones, []).
+flatten_all_zones(Zones) ->
+    flatten_all_zones(Zones, []).
 
-flatten_zones([], Flats) ->
+flatten_all_zones([], Flats) ->
     Flats;
-flatten_zones([Z1|_]= AllZones, Flats) ->
+flatten_all_zones([Z1|_]= AllZones, Flats) ->
     {CurrentZones, RestZones}= ezic_zone:split_by_name(Z1, AllZones),
     NewFlats= lists:merge(Flats, flatten_zone_set(CurrentZones)),
-    flatten_zones(RestZones, NewFlats).
+    flatten_all_zones(RestZones, NewFlats).
 
 
 
