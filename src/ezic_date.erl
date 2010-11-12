@@ -6,11 +6,12 @@
 
 -export([
 	 normalize/1
+	 , normalize/2
 
 	 % rule-specific
-	 , for_rule/2
+	 , for_rule_relative/2
+	 , for_rule/5
 	 , for_rule_utc/4
-	 , for_rule_all/4
 
 
 	 % converters
@@ -21,6 +22,7 @@
 	 % date math
 	 , add_seconds/2
 	 , add_offset/2
+	 , add_offset/3
 	 , all_times/3
 	 , m1s/1
 	 , m1s/3
@@ -52,26 +54,60 @@ normalize(R={{_,_,_}, #tztime{}}) ->
     R.
 
 
+%% normalizes a date, and sets the #tztime{flag=Flag} if appropriate
+%% @todo ensure flag is valid
+%% @todo cover all the cases. this is currently just used for standard erlang datetimes
+normalize(DT={D={_,_,_},T={HH,_,_}}, Flag) 
+  when is_atom(Flag), is_integer(HH) ->
+    
+    DTz= {D, #tztime{time=T, flag=Flag}},
+    normalize(DTz);
+
+normalize(D, Flag) ->
+    case normalize(D) of
+	X when is_atom(X) -> X;
+	X when is_record(X, tztime) ->
+	    X#tztime{flag=Flag};
+	_ ->
+	    erlang:error(badDateTime, D)
+	end.
+    
+
+
 %% returns RELATIVE datetime for a rule and Year
 %%   -> {{Y,M,D},#tztime{}} | {{Y,M,D},{HH,MM,SS}}
-for_rule(#rule{in=M, on=D, at=At}, Y) when is_integer(D) ->
+for_rule_relative(#rule{in=M, on=D, at=At}, Y) when is_integer(D) ->
     {{Y,M,D}, At};
-for_rule(#rule{in=M, on={last, D}, at=At}, Y) ->
+for_rule_relative(#rule{in=M, on={last, D}, at=At}, Y) ->
     {last_day_of(D, Y,M), At};
-for_rule(#rule{in=M, on=#tzon{day=Day, filter=Filter}, at=At}, Y) ->
+for_rule_relative(#rule{in=M, on=#tzon{day=Day, filter=Filter}, at=At}, Y) ->
     {first_day_limited(Day, Filter, Y,M), At}.
+
+
+
+
 
 
 %% returns set of ALL datetimes for a rule, given the gmt offset and
 %% current dst offset.
-for_rule_all(Rule, Offset, DSTOffset, Year) ->
-    DT= for_rule(Rule, Year),
-    all_times(DT, Offset, DSTOffset).
+for_rule(Rule, Offset, PrevDSTOffset, NextDSTOffset, Year) ->
+    {WT,ST,UT}= for_rule_old_dst(Rule, Offset, PrevDSTOffset, Year),
+    WTNew= add_offset(WT, PrevDSTOffset, NextDSTOffset),
+    {{WT,WTNew}, ST, UT}.
     
 
+
+
+
+for_rule_old_dst(Rule, Offset, PrevDSTOffset, Year) ->
+    DT= for_rule_relative(Rule, Year),
+    {WT,ST,UT}= all_times(DT, Offset, PrevDSTOffset).    
+
+
+
 % returns UTC datetime for rule, offset, dst offset, and year
-for_rule_utc(Rule, Offset, DSTOffset, Year) ->
-    {_,_,UTCDatetime} = for_rule_all(Rule, Offset, DSTOffset, Year),
+for_rule_utc(Rule, Offset, PrevDSTOffset, Year) ->
+    {_,_,UTCDatetime} = for_rule_old_dst(Rule, Offset, PrevDSTOffset, Year),
     UTCDatetime.
 
 
@@ -116,8 +152,11 @@ add_seconds(Datetime, Seconds) ->
 
 
 add_offset(Datetime, Offset) ->
-    Sec= calendar:time_to_seconds(Offset),
-    add_seconds(Datetime, Sec).
+    add_offset(Datetime, {0,0,0}, Offset).
+add_offset(Datetime, FromOffset, ToOffset) ->
+    FromSec= calendar:time_to_seconds(FromOffset),
+    ToSec= calendar:time_to_seconds(ToOffset),
+    add_seconds(Datetime, ToSec -FromSec).
 
 
 
@@ -174,17 +213,18 @@ all_times({Date, #tztime{time=WallTime, flag=Flag}}, Offset, DSTOffset)
 
 compare(_, current) ->
     true;
-compare(current, current) ->
-    true;
 compare(current, _) ->
     false;
 
 
 compare(_, X) when X=:=max; X=:=maximum ->
     true;
-compare(X, X) when X=:=max; X=:=maximum ->
-    true;
 compare(X, _) when X=:=max; X=:=maximum ->
+    false;
+
+compare(X, _) when X=:=min; X=:=minimum ->
+    true;
+compare(_, X) when X=:=min; X=:=minimum ->
     false;
 
 

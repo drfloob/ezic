@@ -94,14 +94,16 @@ project_end_utc(Zone=#zone{}, DSTOffset) ->
 
 
 
-% returns {Zone, Rest} where Zone is the next zone after UTCFrom,
-%  subject to the DST offset. 
-% Note that dst differences *can* change which zone comes next, 
-%  though it's very unlikely (and does not exist in the current tz database files). 
-%  this method covers that event, anyhow.
-
-%% BAD!!! UCTFrom is not used! 
+%% returns [Zone | Rest] where Zone is the next zone after UTCFrom,
+%%  subject to the DST offset. 
+%% Note that dst differences *can* change which zone comes next, 
+%%  though it's very unlikely (and does not exist in the current tz database files). 
+%%  this method covers that event, anyhow. see unit tests for examples.
 next(ZoneList, UTCFrom, DSTOff) ->
+    ?debugMsg("next:"),
+    ?debugVal(ZoneList),
+    ?debugVal(UTCFrom),
+
     DatedList= lists:map(
 		 fun(Z=#zone{until=Until, gmtoff=Offset})->
 			 NUntil= ezic_date:normalize(Until),
@@ -109,6 +111,8 @@ next(ZoneList, UTCFrom, DSTOff) ->
 			 {UTCDt, Z}
 		 end
 		 , ZoneList),
-    FilteredList= lists:filter(fun({IDt,_})-> UTCFrom =< IDt end, DatedList),
-    SortedList= lists:sort(FilteredList),
+    FilteredList= lists:filter(fun({IDt,_})-> ezic_date:compare(UTCFrom, IDt) end, DatedList),
+    
+%x    ?debugVal(FilteredList),
+    SortedList= lists:sort(fun({X,_},{Y,_})->ezic_date:compare(X,Y)end, FilteredList),
     [Z || {_,Z}<- SortedList].

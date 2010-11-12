@@ -3,24 +3,6 @@
 -include_lib("eunit/include/eunit.hrl").
 
 
-for_rule_test_() ->
-    BR= #rule{at=#tztime{}},
-    [
-     % last days of months
-     ?_assertEqual({{2010, 03, 28}, #tztime{}}, ezic_date:for_rule(BR#rule{in=3, on={last, "Sun"}}, 2010))
-     , ?_assertEqual({{2010, 11, 30}, #tztime{}}, ezic_date:for_rule(BR#rule{in=11, on={last, "Tue"}}, 2010))
-     , ?_assertEqual({{2010, 11, 24}, #tztime{}}, ezic_date:for_rule(BR#rule{in=11, on={last, "Wed"}}, 2010))
-
-     % days =< or >= absolute dates in given month
-     , ?_assertEqual({{2010, 11, 14}, #tztime{}}, ezic_date:for_rule(BR#rule{in=11, on=#tzon{day="Sun", filter={geq, 9}}}, 2010))
-     , ?_assertEqual({{2010, 11, 7}, #tztime{}}, ezic_date:for_rule(BR#rule{in=11, on=#tzon{day="Sun", filter={leq, 9}}}, 2010))
-
-     % these should fail
-     , ?_assertError(no_previous_day, ezic_date:for_rule(BR#rule{in=11, on=#tzon{day="Sun", filter={leq, 1}}}, 2010))
-     , ?_assertError(no_next_day, ezic_date:for_rule(BR#rule{in=11, on=#tzon{day="Sun", filter={geq, 29}}}, 2010))
-    ].
-
-
 for_rule_utc_dst_test_() ->
     WRule= #rule{in=11, on=11, at=#tztime{time={0,0,0}}, save={0,0,0}},
     SRule= #rule{in=11, on=11, at=#tztime{time={0,0,0}, flag=s}, save={0,0,0}},
@@ -47,6 +29,31 @@ for_rule_utc_dst_test_() ->
     ].
 
 
+
+for_rule_test_() ->
+    IrkutskRule1= #rule{from=1981, to=1984, in=4, on=1, at=#tztime{}, save={1,0,0}},
+    IrkutskRule2= #rule{from=1981, to=1984, in=10, on=1, at=#tztime{}, save={0,0,0}},
+    
+    [
+     %% Asia/Irkutsk
+     ?_assertEqual({
+		    { {{1981,4,1},{0,0,0}}, {{1981,4,1},{1,0,0}} },   % {oldDst, newDst} 
+		    {{1981,4,1},{0,0,0}}, 
+		    {{1981,3,31},{16,0,0}}
+		   },
+		  ezic_date:for_rule(IrkutskRule1, {8,0,0}, {0,0,0}, {1,0,0}, 1981))
+
+     %% Another Asia/Irkutsk. ezic_date:add_offset repaired.
+     , ?_assertEqual({
+		    { {{1981,10,1},{0,0,0}}, {{1981,9,30},{23,0,0}} },   % {oldDst, newDst} 
+		    {{1981,9,30},{23,0,0}}, 
+		    {{1981,9,30},{15,0,0}}
+		   },
+		  ezic_date:for_rule(IrkutskRule2, {8,0,0}, {1,0,0}, {0,0,0}, 1981))
+    ].
+
+
+
 add_seconds_test_() ->
     [
      ?_assertEqual({{2010,11,7},{9,38,01}}, ezic_date:add_seconds({{2010,11,7},{9,38,00}}, 1))
@@ -64,4 +71,18 @@ compare_test_() ->
     [
      ?_assert(ezic_date:compare({2011,12,12}, current))
      , ?_assertNot(ezic_date:compare(current, {2099,12,12})) % is this the right behavior?
+    ].
+
+
+
+
+all_times_test_() ->
+    
+    Date={2010,11,12},
+    UTC=#tztime{time={16,2,0}, flag=u},
+    
+    [
+     ?_assertEqual(
+	{{Date,{9,2,0}}, {Date,{8,2,0}}, {Date,{16,2,0}}}
+	, ezic_date:all_times({Date,UTC}, {-8,0,0}, {1,0,0}))
     ].
