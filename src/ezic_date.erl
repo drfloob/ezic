@@ -23,6 +23,7 @@
 	 , add_offset/2
 	 , all_times/3
 	 , m1s/1
+	 , m1s/3
 
 	 % comparisons
 	 , compare/2
@@ -46,7 +47,7 @@ normalize(Y) when is_integer(Y) ->
 normalize(Date={Y,M,D}) 
   when is_integer(Y), is_integer(M), is_integer(D) ->
     {Date, #tztime{}};
-normalize(R={{Y,M,D}, #tztime{}}) ->
+normalize(R={{_,_,_}, #tztime{}}) ->
     R.
 
 
@@ -104,7 +105,7 @@ add_seconds(Datetime, Seconds) ->
       calendar:datetime_to_gregorian_seconds(Datetime) + Seconds
      )
     catch
-	error:Reason -> erlang:error(baddate, Datetime)
+	error:_ -> erlang:error(baddate, Datetime)
     end.
 
 

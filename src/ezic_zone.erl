@@ -46,10 +46,12 @@ current_as_of_utc(UTCDatetime, TzName) ->
 
 
 
-
+%% returns the active zone for a given utc time
+%% note: requires that flattening be done
+%% this will likely get reworked significantly
 get_zone_utc(_, []) ->
     erlang:error(no_current);
-get_zone_utc(_UTCDatetime, Zones) ->
+get_zone_utc(_UTCDatetime, _Zones) ->
     not_done.
 			       
 
@@ -95,13 +97,16 @@ project_end_utc(Zone=#zone{}, DSTOffset) ->
 % Note that dst differences *can* change which zone comes next, 
 %  though it's very unlikely (and does not exist in the current tz database files). 
 %  this method covers that event, anyhow.
+
+%% BAD!!! UCTFrom is not used! 
 next(ZoneList, UTCFrom, DSTOff) ->
     DatedList= lists:map(
 		 fun(Z=#zone{until=Until, gmtoff=Offset})->
-			 NU= ezic_date:normalize(Until),
-			 {_,_,UTCDt}= ezic_date:all_times(NU, Offset, DSTOff),
+			 NUntil= ezic_date:normalize(Until),
+			 {_,_,UTCDt}= ezic_date:all_times(NUntil, Offset, DSTOff),
 			 {UTCDt, Z}
 		 end
 		 , ZoneList),
-    [{_,Zone} | DRest]= lists:sort(DatedList),
-    {Zone, [R || {_,R}<- DRest]}.
+    FilteredList= lists:filter(fun({IDt,_})-> UTCFrom =< IDt end, DatedList),
+    SortedList= lists:sort(FilteredList),
+    [Z || {_,Z}<- SortedList].

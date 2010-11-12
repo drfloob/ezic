@@ -1,6 +1,7 @@
 -module(ezic_db).
 -include("include/ezic.hrl").
 -include_lib("stdlib/include/qlc.hrl").
+-include_lib("eunit/include/eunit.hrl").
 
 
 -export([zones/1, rules/1]).
@@ -98,7 +99,7 @@ create_tabs({error, {_, {already_exists,_}}}) ->
     mnesia:start(),
     ok;
 create_tabs(E) ->
-    ?debug(E).
+    ?debugVal(E).
 
 
 

@@ -26,9 +26,9 @@ parse([Name,FromS,ToS,_Type,InS,OnS,AtS,SaveS,Letters]) ->
 
 % returns the projected date of the next "rule event" in UTC time,
 %  after the given UTCDatetime, with the given the zone Offset and current DST offset.
-project_next(Rule=#rule{from=RFrom, to=RTo}, Offset, DSTOffset, UTCAfter=minimum) ->
+project_next(Rule=#rule{from=RFrom}, Offset, DSTOffset, minimum) ->
     ezic_date:for_rule_utc(Rule, Offset, DSTOffset, RFrom);
-project_next(Rule=#rule{from=RFrom, to=RTo}, Offset, DSTOff, UTCAfter={{AY,_,_},_}) ->
+project_next(Rule=#rule{}, Offset, DSTOff, UTCAfter={{AY,_,_},_}) ->
     AllYears= years(Rule),
     GoodYears= years_after(AY, AllYears),
     project_next2(Rule, Offset, UTCAfter, DSTOff, GoodYears).
@@ -40,16 +40,16 @@ project_next(Rule=#rule{from=RFrom, to=RTo}, Offset, DSTOff, UTCAfter={{AY,_,_},
 
 
 % returns the sorted list of years a rule existed for.
-years(Rule=#rule{from=From, to=only}) ->
+years(#rule{from=From, to=only}) ->
     [From];
-years(Rule=#rule{from=From, to=To}) ->
+years(#rule{from=From, to=To}) ->
     try lists:seq(From, To)
     catch error:function_clause ->
 	    erlang:error(bad_year_range, [From, To])
     end.
 
 % returns the years from the list that are greater than OR equal to Y
-years_after(Y, []) ->
+years_after(_, []) ->
     [];
 years_after(Y, Years) ->
     {GOOD, _}= lists:partition(

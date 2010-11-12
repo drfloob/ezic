@@ -23,6 +23,7 @@ compile :
 
 clean : 
 	-@rm ebin/*
+	-@rm erl_crash.dump
 
 
 run :
