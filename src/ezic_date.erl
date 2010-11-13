@@ -51,13 +51,15 @@ normalize(Date={Y,M,D})
   when is_integer(Y), is_integer(M), is_integer(D) ->
     {Date, #tztime{}};
 normalize(R={{_,_,_}, #tztime{}}) ->
-    R.
+    R;
+normalize({D={_,_,_}, T={_,_,_}}) ->
+    {D, #tztime{time=T}}.
 
 
 %% normalizes a date, and sets the #tztime{flag=Flag} if appropriate
 %% @todo ensure flag is valid
 %% @todo cover all the cases. this is currently just used for standard erlang datetimes
-normalize(DT={D={_,_,_},T={HH,_,_}}, Flag) 
+normalize({D={_,_,_},T={HH,_,_}}, Flag) 
   when is_atom(Flag), is_integer(HH) ->
     
     DTz= {D, #tztime{time=T, flag=Flag}},
@@ -90,6 +92,7 @@ for_rule_relative(#rule{in=M, on=#tzon{day=Day, filter=Filter}, at=At}, Y) ->
 
 %% returns set of ALL datetimes for a rule, given the gmt offset and
 %% current dst offset.
+%% @bug @todo Year is ambiguous. In the case of Africa/Tripoli, a jan 1st, 1952 rule shows up as 1951 due to offset and dst.
 for_rule(Rule, Offset, PrevDSTOffset, NextDSTOffset, Year) ->
     {WT,ST,UT}= for_rule_old_dst(Rule, Offset, PrevDSTOffset, Year),
     WTNew= add_offset(WT, PrevDSTOffset, NextDSTOffset),
@@ -101,7 +104,7 @@ for_rule(Rule, Offset, PrevDSTOffset, NextDSTOffset, Year) ->
 
 for_rule_old_dst(Rule, Offset, PrevDSTOffset, Year) ->
     DT= for_rule_relative(Rule, Year),
-    {WT,ST,UT}= all_times(DT, Offset, PrevDSTOffset).    
+    all_times(DT, Offset, PrevDSTOffset).
 
 
 
@@ -239,22 +242,25 @@ when is_integer(Y1), is_integer(Y2)
      , is_integer(SS1), is_integer(SS2) 
      ->
     
-    DT1 =< DT2.
+    DT1 =< DT2;
 
 
+compare({Date1, #tztime{time=Time1, flag=F}}
+	, {Date2, #tztime{time=Time2, flag=F}}) ->
+    
+    Date1 =< Date2 orelse Time1 =< time2;
 
-% returns true if DT1 =:= DT2. False otherwise
-% both times are assumed to be in the same zone/DST context
-equal(DT1={{Y1,M1,D1},{HH1,MM1,SS1}}, DT2={{Y2,M2,D2},{HH2,MM2,SS2}}) 
-when is_integer(Y1), is_integer(Y2)
-     , is_integer(M1), is_integer(M2) 
-     , is_integer(D1), is_integer(D2) 
-     , is_integer(HH1), is_integer(HH2) 
-     , is_integer(MM1), is_integer(MM2) 
-     , is_integer(SS1), is_integer(SS2) 
-     ->
+compare(X,Y) ->
+    XN= normalize(X),
+    YN= normalize(Y),
+    compare(XN, YN).
+    
 
-    DT1 =:= DT2.
+
+equal(X,Y) when X=:=Y ->
+    true;
+equal(_,_) ->
+    false.
 
 
 

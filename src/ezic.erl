@@ -50,7 +50,9 @@ load(Folder) ->
 
 dev_start() ->
 %    ezic:load(filename:join("priv","tzdata")),
-    ezic_flatten:flatten().
+%    ezic_flatten:flatten().
+    TZones= ezic_db:zones("Africa/Tripoli"),
+    ezic_flatten:flatten_all_zones(TZones).
 
 
 test() ->

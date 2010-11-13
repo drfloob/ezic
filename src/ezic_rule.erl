@@ -6,6 +6,7 @@
 -export([project_next/4]).
 
 
+
 parse([Name,FromS,ToS,_Type,InS,OnS,AtS,SaveS,Letters]) ->
     From= ezic_parse:year(FromS),
     To= ezic_parse:year(ToS),
@@ -29,8 +30,8 @@ parse([Name,FromS,ToS,_Type,InS,OnS,AtS,SaveS,Letters]) ->
 project_next(Rule=#rule{from=RFrom}, Offset, DSTOffset, minimum) ->
     ezic_date:for_rule_utc(Rule, Offset, DSTOffset, RFrom);
 project_next(Rule=#rule{}, Offset, DSTOff, UTCAfter={{AY,_,_},_}) ->
-    AllYears= years(Rule),
-    GoodYears= years_after(AY, AllYears),
+    YearRange= years(Rule),
+    GoodYears= years_after(AY, YearRange),
     project_next2(Rule, Offset, UTCAfter, DSTOff, GoodYears).
 
 
@@ -39,41 +40,41 @@ project_next(Rule=#rule{}, Offset, DSTOff, UTCAfter={{AY,_,_},_}) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% returns the sorted list of years a rule existed for.
+% returns the range of years a rule existed for, normalized for calculations.
 years(#rule{from=From, to=only}) ->
-    [From];
+    {From,From};
 years(#rule{from=From, to=X}) when X=:=max; X=:=maximum->
-    [From,9999]; % let's hope this isn't used past year 9999
+    {From,X};
+years(#rule{from=From, to=To}) when From =< To, is_integer(From), is_integer(To) ->
+    {From, To};
 years(#rule{from=From, to=To}) ->
-    try lists:seq(From, To)
-    catch error:function_clause ->
-	    erlang:error(bad_year_range, [From, To])
-    end.
+    erlang:error(bad_year_range, [From, To]).
 
-% returns the years from the list that are greater than OR equal to Y
-years_after(_, []) ->
-    [];
-years_after(Y, Years) ->
-    {GOOD, _}= lists:partition(
-      fun(X) when Y =< X -> true; 
-	 (_) -> false 
-      end, Years),
-    GOOD.
-			    
+%% returns the range of years that are greater than OR equal to Y.
+%% calculation stops after a fixed year, configurable above.
+years_after(Y, {F,M}) when M=:=max; M=:=maximum ->
+    {erlang:max(Y,F), M};
+years_after(Y, {From, To}) when Y > To ->
+    none;
+years_after(Y, {From, To}) ->
+    {erlang:max(Y,From), To}.
+
+    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INTERNAL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-project_next2(_,_,_,_,[]) ->
+project_next2(_,_,_,_,none) ->
     none;
-project_next2(Rule, Offset, UTCAfter, DSTOffset, [Year|RestYears]) ->
-    RuleDate= ezic_date:for_rule_utc(Rule, Offset, DSTOffset, Year),
+project_next2(Rule, Offset, UTCAfter, DSTOffset, Years={FromYear, _}) ->
+    RuleDate= ezic_date:for_rule_utc(Rule, Offset, DSTOffset, FromYear),
     case ezic_date:compare(UTCAfter, RuleDate) andalso (not ezic_date:equal(UTCAfter, RuleDate)) of
 	true -> RuleDate;
-	_ -> project_next2(Rule, Offset, UTCAfter, DSTOffset, RestYears)
+	false -> 
+	    RestYears= years_after(FromYear+1, Years),
+	    project_next2(Rule, Offset, UTCAfter, DSTOffset, RestYears)
     end.
 
 
@@ -91,9 +92,13 @@ project_next2(Rule, Offset, UTCAfter, DSTOffset, [Year|RestYears]) ->
 
 years_test_() ->
     [
-     ?_assertEqual([1952], years(#rule{from=1952,to=only}))
-     , ?_assertEqual([1952,1953], years(#rule{from=1952,to=1953}))
-     , ?_assertEqual([1952,1953,1954,1955], years(#rule{from=1952,to=1955}))
+     ?_assertEqual({1952,1952}, years(#rule{from=1952,to=only}))
+     , ?_assertEqual({1952,1953}, years(#rule{from=1952,to=1953}))
+     , ?_assertEqual({1952,1955}, years(#rule{from=1952,to=1955}))
+
+     , ?_assertEqual({1952,max}, years(#rule{from=1952,to=max}))
+     , ?_assertEqual({1952,maximum}, years(#rule{from=1952,to=maximum}))
+
      , ?_assertError(bad_year_range, years(#rule{from=1955,to=1952}))
     ].
 
@@ -101,11 +106,14 @@ years_test_() ->
 % @todo type checking. lack of types worries me sometimes :(
 years_after_test_() ->
     [
-     ?_assertEqual([2010], years_after(2010, [2010]))
-     , ?_assertEqual([2010,2011], years_after(2010, [2010,2011]))
-     , ?_assertEqual([2011], years_after(2011, [2010,2011]))
-     , ?_assertEqual([], years_after(2012, [2010,2011]))
-     , ?_assertEqual([], years_after(2012, []))
+     ?_assertEqual({2010,2010}, years_after(2010, {2010,2010}))
+     , ?_assertEqual({2010,2011}, years_after(2010, {2010,2011}))
+     , ?_assertEqual({2011,2011}, years_after(2011, {2010,2011}))
+
+     , ?_assertEqual({2011,max}, years_after(2011, {2010,max}))
+     , ?_assertEqual({2010,max}, years_after(2009, {2010,max}))
+
+     , ?_assertEqual(none, years_after(2012, {2010,2011}))
     ].
 
 -endif.

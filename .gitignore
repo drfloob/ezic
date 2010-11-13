@@ -6,3 +6,4 @@ commit_msg
 tzdata/
 \#*
 db/
+out

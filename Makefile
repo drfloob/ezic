@@ -1,15 +1,18 @@
 ERLC_WARNINGS := -W1
 MNESIA_DIR := db
 RUN_INIT := -run ezic_db init
-DEBUG := +debug_info -Ddebug
+DEBUG := -DNODEBUG
 TEST := 
 TZSET := northamerica
 SHELL := /bin/bash
 
+
 all : clean compile
+
 
 nowarn : ERLC_WARNINGS = -W0
 nowarn : clean compile
+
 
 test : ERLC_WARNINGS := -W0
 test : TEST := -DTEST
@@ -29,11 +32,8 @@ clean :
 run :
 	erl -pa ebin -mnesia dir $(MNESIA_DIR) $(RUN_INIT)
 
-build : DEBUG = 
-build : all
 
-
-devstart : RUN_INIT := $(RUN_INIT) -s ezic dev_start
+devstart : RUN_INIT := $(RUN_INIT) -s ezic dev_start -s erlang halt
 devstart : all run
 
 
@@ -44,3 +44,6 @@ tzdata :
 diff :
 	-git diff > /tmp/ezic.tmp.diff
 	emacs /tmp/ezic.tmp.diff
+
+
+debug : DEBUG := +debug_info -dNODEBUG	

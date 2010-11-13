@@ -50,6 +50,16 @@ for_rule_test_() ->
 		    {{1981,9,30},{15,0,0}}
 		   },
 		  ezic_date:for_rule(IrkutskRule2, {8,0,0}, {1,0,0}, {0,0,0}, 1981))
+
+     %% Africa/Tripoli recursion bug
+     , ?_assertEqual({
+		    { {{1952,1,1},{0,0,0}}, {{1951,12,31},{23,0,0}} },   % {oldDst, newDst} 
+                    {{1951,12,31},{23,0,0}},
+                    {{1951,12,31},{23,0,0}} },
+		  ezic_date:for_rule(
+		    #rule{from=1952, to=only, in=1, on=1, at=#tztime{}, save={0,0,0}}, 
+		    {1,0,0}, {1,0,0}, {0,0,0}, 1951))
+
     ].
 
 
