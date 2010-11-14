@@ -25,14 +25,18 @@ parse([Name,FromS,ToS,_Type,InS,OnS,AtS,SaveS,Letters]) ->
 
 
 
-% returns the projected date of the next "rule event" in UTC time,
-%  after the given UTCDatetime, with the given the zone Offset and current DST offset.
+% returns {Year, UTCDate} where UTCDate is the projected date of the
+% next "rule event" in UTC time, after the given UTCDatetime, with the
+% given the zone Offset and current DST offset, and Year is the rule
+% year (which may differ from the UTC year).
 project_next(Rule=#rule{from=RFrom}, Offset, DSTOffset, minimum) ->
-    ezic_date:for_rule_utc(Rule, Offset, DSTOffset, RFrom);
+    RetDate={{RetYear,_,_},_}= ezic_date:for_rule_utc(Rule, Offset, DSTOffset, RFrom),
+    {RetYear, RetDate};
 project_next(Rule=#rule{}, Offset, DSTOff, UTCAfter={{AY,_,_},_}) ->
     YearRange= years(Rule),
     GoodYears= years_after(AY, YearRange),
     project_next2(Rule, Offset, UTCAfter, DSTOff, GoodYears).
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -71,7 +75,7 @@ project_next2(_,_,_,_,none) ->
 project_next2(Rule, Offset, UTCAfter, DSTOffset, Years={FromYear, _}) ->
     RuleDate= ezic_date:for_rule_utc(Rule, Offset, DSTOffset, FromYear),
     case ezic_date:compare(UTCAfter, RuleDate) andalso (not ezic_date:equal(UTCAfter, RuleDate)) of
-	true -> RuleDate;
+	true -> {FromYear, RuleDate};
 	false -> 
 	    RestYears= years_after(FromYear+1, Years),
 	    project_next2(Rule, Offset, UTCAfter, DSTOffset, RestYears)

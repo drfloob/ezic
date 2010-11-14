@@ -55,10 +55,10 @@ for_rule_test_() ->
      , ?_assertEqual({
 		    { {{1952,1,1},{0,0,0}}, {{1951,12,31},{23,0,0}} },   % {oldDst, newDst} 
                     {{1951,12,31},{23,0,0}},
-                    {{1951,12,31},{23,0,0}} },
+                    {{1951,12,31},{22,0,0}} },
 		  ezic_date:for_rule(
 		    #rule{from=1952, to=only, in=1, on=1, at=#tztime{}, save={0,0,0}}, 
-		    {1,0,0}, {1,0,0}, {0,0,0}, 1951))
+		    {1,0,0}, {1,0,0}, {0,0,0}, 1952))
 
     ].
 
@@ -95,4 +95,22 @@ all_times_test_() ->
      ?_assertEqual(
 	{{Date,{9,2,0}}, {Date,{8,2,0}}, {Date,{16,2,0}}}
 	, ezic_date:all_times({Date,UTC}, {-8,0,0}, {1,0,0}))
+    ].
+
+
+
+normalize_test_() ->
+    TZT= #tztime{time={1,2,3}, flag=s},
+    [
+     ?_assertEqual({{2010,1,1}, #tztime{}}, ezic_date:normalize(2010))
+     , ?_assertEqual({{2010,2,3}, #tztime{}}, ezic_date:normalize({2010,2,3}))
+     , ?_assertEqual({{2010,11,28}, #tztime{}}, ezic_date:normalize({2010,11,{last, "Sun"}}))
+     , ?_assertEqual({{2010,11,16}, #tztime{}}, ezic_date:normalize({2010,11,#tzon{day="Tue", filter={geq, 10}}}))
+
+     , ?_assertError(function_clause, ezic_date:normalize({2010, #tztime{}}))
+
+     , ?_assertEqual({{2010,2,3}, TZT}, ezic_date:normalize({{2010,2,3}, TZT}))
+     , ?_assertEqual({{2010,11,28}, TZT}, ezic_date:normalize({{2010,11,{last, "Sun"}}, TZT}))
+     , ?_assertEqual({{2010,11,16}, TZT}, ezic_date:normalize({{2010,11,#tzon{day="Tue", filter={geq, 10}}}, TZT}))
+
     ].

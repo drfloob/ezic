@@ -47,13 +47,12 @@ normalize(A) when is_atom(A) ->
     A;
 normalize(Y) when is_integer(Y) ->
     {{Y,1,1}, #tztime{}};
-normalize(Date={Y,M,D}) 
-  when is_integer(Y), is_integer(M), is_integer(D) ->
-    {Date, #tztime{}};
-normalize(R={{_,_,_}, #tztime{}}) ->
-    R;
-normalize({D={_,_,_}, T={_,_,_}}) ->
-    {D, #tztime{time=T}}.
+normalize({Y,M,D}) ->
+    {relative_date(Y,M,D), #tztime{}};
+normalize({{Y,M,D}, T=#tztime{}}) ->
+    {relative_date(Y,M,D), T};
+normalize({{Y,M,D}, T={_,_,_}}) ->
+    {relative_date(Y,M,D), #tztime{time=T}}.
 
 
 %% normalizes a date, and sets the #tztime{flag=Flag} if appropriate
@@ -76,23 +75,26 @@ normalize(D, Flag) ->
     
 
 
+
+
 %% returns RELATIVE datetime for a rule and Year
 %%   -> {{Y,M,D},#tztime{}} | {{Y,M,D},{HH,MM,SS}}
-for_rule_relative(#rule{in=M, on=D, at=At}, Y) when is_integer(D) ->
-    {{Y,M,D}, At};
-for_rule_relative(#rule{in=M, on={last, D}, at=At}, Y) ->
-    {last_day_of(D, Y,M), At};
-for_rule_relative(#rule{in=M, on=#tzon{day=Day, filter=Filter}, at=At}, Y) ->
-    {first_day_limited(Day, Filter, Y,M), At}.
+for_rule_relative(#rule{in=M, on=D, at=At}, Y) ->
+    {relative_date(Y,M,D), At}.
 
 
 
-
+relative_date(Y,M,D) when is_integer(D) ->
+    {Y,M,D};
+relative_date(Y,M,{last, D}) ->
+    last_day_of(D, Y,M);
+relative_date(Y,M,#tzon{day=Day, filter=Filter}) ->
+    first_day_limited(Day, Filter, Y,M).
 
 
 %% returns set of ALL datetimes for a rule, given the gmt offset and
 %% current dst offset.
-%% @bug @todo Year is ambiguous. In the case of Africa/Tripoli, a jan 1st, 1952 rule shows up as 1951 due to offset and dst.
+%% @bug @todo Year is ambiguous. In the case of Africa/Tripoli, a jan 1st, 1952 rule shows up as 1951 due to offset and dst
 for_rule(Rule, Offset, PrevDSTOffset, NextDSTOffset, Year) ->
     {WT,ST,UT}= for_rule_old_dst(Rule, Offset, PrevDSTOffset, Year),
     WTNew= add_offset(WT, PrevDSTOffset, NextDSTOffset),

@@ -4,7 +4,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 
--export([zones/1, rules/1]).
+-export([zones/1, rules/1, flatzones/1, flatzone/2]).
 -export([wipe/0, init/0, insert_all/1, get_all/1]).
 
 
@@ -49,6 +49,29 @@ get_all(Tab) when is_atom(Tab) ->
 	end,
     {atomic, Ret}= mnesia:transaction(F),
     Ret.
+
+
+flatzones(TzName) ->
+    F = fun() ->
+		Q = qlc:q([Fz || Fz=#flatzone{tzname=N}<- mnesia:table(flatzone), N=:=TzName]),
+		qlc:e(Q)
+	end,
+    {atomic, Ret}= mnesia:transaction(F),
+    Ret.
+    
+
+flatzone(Date, TzName) ->
+    F = fun()->
+		Q = qlc:q(
+		      [Fz || Fz=#flatzone{tzname=N, utc_from=UF, utc_to=UT} <- mnesia:table(flatzone)
+				    , N=:=TzName
+				    , ezic_date:compare(UF, Date)
+				    , ezic_date:compare(Date, UT)]),
+		qlc:e(Q)
+	end,
+    {atomic, [FlatZone]}= mnesia:transaction(F),
+    FlatZone.
+    
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,7 +99,7 @@ insert_all(Records) ->
 % initialize the db
 init() ->
     create_tabs(mnesia:create_schema([node()])),
-    mnesia:wait_for_tables([rule, zone, link, leap], 3000).
+    mnesia:wait_for_tables([rule, zone, link, leap, flatzone], 3000).
 
 
 % WARNING: deletes all db files

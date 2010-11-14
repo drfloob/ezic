@@ -8,7 +8,7 @@
 	 , next_timechange_after/2
 	]).
 
--export([load/1, dev_start/0, test/0]).
+-export([load/1, dev/0, test/0]).
 
 
 
@@ -21,12 +21,18 @@
 localtime(TzName) ->
     utc_to_local(erlang:universaltime(), TzName).
 
-utc_to_local(UTCDatetime, TzName) ->
-    {ok, Zone, Rule}= current_as_of_utc(UTCDatetime, TzName),
-    SecDiff= time_offset(Zone, Rule),
-    ezic_date:add_seconds(UTCDatetime, SecDiff).
+%% utc_to_local(UTCDatetime, TzName) ->
+%%     {ok, Zone, Rule}= current_as_of_utc(UTCDatetime, TzName),
+%%     SecDiff= time_offset(Zone, Rule),
+%%     ezic_date:add_seconds(UTCDatetime, SecDiff).
 
+
+utc_to_local(UTCDatetime, TzName) ->
+    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(UTCDatetime, TzName),
+    ezic_date:add_offset(ezic_date:add_offset(UTCDatetime, Offset), DSTOffset).
     
+
+
 
 next_timechange(TzName) ->
     next_timechange_after(erlang:universaltime(), TzName).
@@ -48,11 +54,13 @@ load(Folder) ->
     ezic_loader:load(Folder).
 
 
-dev_start() ->
-%    ezic:load(filename:join("priv","tzdata")),
-%    ezic_flatten:flatten().
-    TZones= ezic_db:zones("Africa/Tripoli"),
-    ezic_flatten:flatten_all_zones(TZones).
+dev() ->
+    ezic:load(filename:join("priv","tzdata")),
+    ezic_flatten:flatten(),
+%    Zones= ezic_db:zones("WET"),
+%    ezic_flatten:flatten_all_zones(Zones),
+
+    ok.
 
 
 test() ->

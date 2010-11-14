@@ -85,6 +85,7 @@ project_end(#zone{until=Until, gmtoff=Offset}, DSTOffset) ->
     NUntil= ezic_date:normalize(Until),
     ezic_date:all_times(NUntil, Offset, DSTOffset).
 
+
 % returns just the UTC datetime projected for zone end
 project_end_utc(Zone=#zone{}, DSTOffset) ->
 %    ?debugVal(Zone),
