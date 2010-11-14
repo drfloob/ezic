@@ -68,9 +68,18 @@ flatzone(Date, TzName) ->
 				 , ezic_flatten:contains_date(Fz, Date)]),
 		qlc:e(Q)
 	end,
-    {atomic, [FlatZone]}= mnesia:transaction(F),
-    FlatZone.
-    
+    {atomic, FlatZones}= mnesia:transaction(F),
+
+    case length(FlatZones) of
+	1 ->
+	    hd(FlatZones);
+	2 ->
+	    erlang:error(ambiguous_zone, FlatZones);
+	0 ->
+	    erlang:error(no_zone);
+	_ ->
+	    erlang:error(should_not_happen, {FlatZones, Date, TzName})
+    end.
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

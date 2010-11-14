@@ -4,6 +4,7 @@
 -export([
 	 localtime/1
 	 , utc_to_local/2
+	 , local_to_utc/2
 	 , next_timechange/1
 	 , next_timechange_after/2
 	]).
@@ -44,6 +45,16 @@ utc_to_local(UTCDatetime, TzName) ->
       , DSTOffset).
     
 
+local_to_utc(LocalDatetime, TzName) ->
+    NormalDatetime= ezic_date:normalize(LocalDatetime, w),
+    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(NormalDatetime, TzName),
+    
+    ezic_date:add_offset(
+      ezic_date:add_offset(
+	LocalDatetime
+	, Offset, {0,0,0})
+      , DSTOffset, {0,0,0}).
+	    
 
 
 next_timechange(TzName) ->
