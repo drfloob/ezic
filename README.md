@@ -1,11 +1,15 @@
 ezic
 ====
-ezic is a set of erlang utilities for the Olson timezone database files. See the [tz database](http://www.twinsun.com/tz/tz-link.htm) page for more information.
+ezic is an erlang libraary for working with timezones. It compiles the Olson timezone database files into native erlang terms, which makes timezone lookup and zone conversion very fast. See the [tz database](http://www.twinsun.com/tz/tz-link.htm) page for more information about the Olson database.
 
 
 
 Status
 ------
+
+2010.11.14
+
+ * The Zone/Rule flattening algorithm works correctly for a handful of tested zones. `ezic:local_to_utc/2` throws `ambiguous_zone` and `no_zone` errors where appropriate. Aside from bugs and edge cases that are sure to exist, and leap seconds, ezic is mostly functional.
 
 2010.11.07
 
@@ -34,8 +38,8 @@ API
 ---
 
  * `ezic:localtime(TimeZone) -> datetime()`
- * `ezic:utc_to_time(universal_datetime(), TimeZone) -> local_datetime()`
- * `ezic:utc_from_time(local_datetime(), TimeZone) -> universal_datetime()`
+ * `ezic:utc_to_local(universal_datetime(), TimeZone) -> local_datetime()`
+ * `ezic:local_to_utc(local_datetime(), TimeZone) -> universal_datetime()`
  * `ezic:zone_convert(from_datetime(), TimeZoneFrom, TimeZoneTo) -> to_datetime()`
 
 
@@ -69,7 +73,7 @@ Setup
 Purpose
 -------
 
-Erlang/OTP doesn't have a timezone library, so I decided to write one.
+Erlang/OTP didn't have a timezone library, so I wrote ezic to fill that void.
 
 The [recommended way](http://www.erlang.org/pipermail/erlang-questions/2006-December/024291.html) of handling timezones in erlang involves setting the system environment variable `TZ` to the desired timezone, then calling erlang time functions. As far as I can tell, this technique has a few key issues:
 
@@ -85,3 +89,5 @@ Acknowledgements
 ----------------
 
 I was inspired by the (anti-) license of the [SQLite project](http://www.sqlite.org/copyright.html)  in my decision to release this into the public domain.
+
+

@@ -5,7 +5,7 @@ DEBUG := -DNODEBUG -Ddebug
 TEST := 
 TZSET := northamerica
 SHELL := /bin/bash
-
+COMPILE := ./src/*.erl
 
 all : clean compile
 
@@ -15,13 +15,14 @@ nowarn : clean compile
 
 
 test : ERLC_WARNINGS := -W0
-test : TEST := -DTEST
-test : all
-	erlc $(ERLC_WARNINGS) $(TEST) -o ./ebin ./test/*.erl
-	erl -noshell -pa ebin -run test all -s erlang halt
+test : TEST := -DTEST 
+test : RUN_INIT += -run test all -s erlang halt
+test : COMPILE += ./test/*.erl
+test : all run
+
 
 compile :
-	erlc $(DEBUG) $(TEST) $(ERLC_WARNINGS) $(OPTIONS) -o ./ebin ./src/*.erl
+	erlc $(DEBUG) $(TEST) $(ERLC_WARNINGS) $(OPTIONS) -o ./ebin $(COMPILE)
 	-erl -noshell -pa ebin -s erldev make_app . -s erlang halt
 
 clean : 
