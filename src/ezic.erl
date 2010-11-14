@@ -8,7 +8,13 @@
 	 , next_timechange_after/2
 	]).
 
--export([load/1, dev/0, test/0]).
+-export([
+	 load/1
+	 , dev/0
+	 , test/0
+	 , reflatten/0
+	 , zf/0
+	]).
 
 
 
@@ -28,8 +34,14 @@ localtime(TzName) ->
 
 
 utc_to_local(UTCDatetime, TzName) ->
-    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(UTCDatetime, TzName),
-    ezic_date:add_offset(ezic_date:add_offset(UTCDatetime, Offset), DSTOffset).
+    NormalDatetime= ezic_date:normalize(UTCDatetime, u),
+    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(NormalDatetime, TzName),
+    
+    ezic_date:add_offset(
+      ezic_date:add_offset(
+	UTCDatetime
+	, Offset)
+      , DSTOffset).
     
 
 
@@ -57,10 +69,21 @@ load(Folder) ->
 dev() ->
     ezic:load(filename:join("priv","tzdata")),
     ezic_flatten:flatten(),
+
 %    Zones= ezic_db:zones("WET"),
 %    ezic_flatten:flatten_all_zones(Zones),
 
     ok.
+
+zf() ->
+    Zones= ezic_db:zones("Asia/Tokyo"),
+    ezic_flatten:flatten_all_zones(Zones).
+    
+
+reflatten() ->
+    ezic_db:wipe(flatzone),
+    ezic_flatten:flatten().
+
 
 
 test() ->

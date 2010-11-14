@@ -5,7 +5,7 @@
 
 
 -export([zones/1, rules/1, flatzones/1, flatzone/2]).
--export([wipe/0, init/0, insert_all/1, get_all/1]).
+-export([wipe/0, wipe/1, init/0, insert_all/1, get_all/1]).
 
 
 -define(create(Record),
@@ -63,10 +63,9 @@ flatzones(TzName) ->
 flatzone(Date, TzName) ->
     F = fun()->
 		Q = qlc:q(
-		      [Fz || Fz=#flatzone{tzname=N, utc_from=UF, utc_to=UT} <- mnesia:table(flatzone)
-				    , N=:=TzName
-				    , ezic_date:compare(UF, Date)
-				    , ezic_date:compare(Date, UT)]),
+		      [Fz || Fz=#flatzone{tzname=N} <- mnesia:table(flatzone)
+				 , N=:=TzName
+				 , ezic_flatten:contains_date(Fz, Date)]),
 		qlc:e(Q)
 	end,
     {atomic, [FlatZone]}= mnesia:transaction(F),
@@ -106,6 +105,16 @@ init() ->
 wipe() ->
     mnesia:stop(),
     mnesia:delete_schema([node()]).
+
+
+
+% WARNING: deletes all entries in table Tab
+wipe(Tab) ->
+    mnesia:transaction(
+      fun()->
+	      mnesia:delete(Tab, '_', write)
+      end).
+
 
 
 create_tabs(ok) ->

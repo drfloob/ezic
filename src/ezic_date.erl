@@ -43,6 +43,7 @@
 %% USED EXCLUSIVELY FOR COMPARISONS. The resulting "datetime" values may not
 %%  represent true dates or times.
 %% @todo ensure atom is valid
+%% assumes wall time, if no #tztime{} given
 normalize(A) when is_atom(A) ->
     A;
 normalize(Y) when is_integer(Y) ->
@@ -253,10 +254,7 @@ compare({Date1, #tztime{time=Time1, flag=F}}
     Date1 =< Date2 orelse Time1 =< time2;
 
 compare(X,Y) ->
-    XN= normalize(X),
-    YN= normalize(Y),
-    compare(XN, YN).
-    
+    erlang:error(bad_dates, [X,Y]).
 
 
 equal(X,Y) when X=:=Y ->

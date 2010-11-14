@@ -13,7 +13,10 @@
 -define(MAXYEAR, 2500). % last year to process flatzones for.
 
 
--export([flatten/0]).
+-export([
+	 flatten/0
+	 , contains_date/2
+	]).
 
 
 %% debug
@@ -25,6 +28,12 @@ flatten() ->
     AllZones= ezic_db:get_all(zone),
     flatten_all_zones(AllZones),
     done.
+
+
+contains_date(FlatZone, Date) ->
+    NDate= ezic_date:normalize(Date),
+    contains_date2(FlatZone, NDate).
+    
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,8 +56,20 @@ flatten_all_zones([Z1|_]= AllZones) ->
 
 
 
+contains_date2(FlatZone=#flatzone{utc_from=From, utc_to=To}, {Dt,#tztime{time=T, flag=F}}) 
+  when F=:= u; F=:= g; F=:=z ->
+    Date={Dt, T},
+    ezic_date:compare(From, Date) andalso ezic_date:compare(Date, To);
 
-
+contains_date2(FlatZone=#flatzone{std_from=From, std_to=To}, {Dt,#tztime{time=T, flag=s}})  ->
+    Date={Dt, T},
+    ezic_date:compare(From, Date) andalso ezic_date:compare(Date, To);
+    
+contains_date2(FlatZone=#flatzone{wall_from=From, wall_to=To}, {Dt,#tztime{time=T, flag=F}})
+  when F=:=w; F=:=undefined ->
+    Date={Dt, T},
+    ezic_date:compare(From, Date) andalso ezic_date:compare(Date, To).
+												 
 
 
 
@@ -161,7 +182,9 @@ flatten_rule_set(FlatStart=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset, offs
     try maxyear_reached(UTCEndingRuleDate) andalso maxyear_reached(ZoneDate) of
 	true -> 
 	    ?debugMsg("maxyear reached from flatten_rule_set"),
-	    {Flats, #flatzone{utc_from=maximum}, none};
+	    {EndFlat, NextFlat}= finish_and_start_flat(max_year, FlatStart, DSTOffset),
+	    NewFlats= [EndFlat | Flats],
+	    {NewFlats, NextFlat, none};
 	false ->
 
 	    case ezic_date:compare(ZoneDate, UTCEndingRuleDate) of
@@ -227,7 +250,14 @@ finish_and_start_flat(FlatStub=#flatzone{}, Zone=#zone{}, EndingDST) ->
     ?debugVal(EndFlat),
 %    ?debugVal(RetNextFlat),
 
-    {EndFlat, RetNextFlat}.
+    {EndFlat, RetNextFlat};
+
+finish_and_start_flat(max_year, FlatStub, DSTOffset) ->
+    EndFlat= ?ENDFLAT(FlatStub, current, current, current, DSTOffset),
+    Stop= {{?MAXYEAR+1,1,1},{0,0,0}},
+    NextFlat= #flatzone{utc_from=Stop},
+    {EndFlat, NextFlat}.
+    
 
 
 %% both timezone and rule are ending at the same time
