@@ -4,8 +4,19 @@
 -include_lib("eunit/include/eunit.hrl").
 
 
--export([zones/1, rules/1, flatzones/1, flatzone/2]).
--export([wipe/0, wipe/1, init/0, insert_all/1, get_all/1]).
+-export([
+	 zones/1
+	 , rules/1
+	 , flatzone/2
+	]).
+
+-export([
+	 wipe/0
+	 , wipe/1
+	 , init/0
+	 , insert_all/1
+	 , get_all/1
+	]).
 
 
 -define(create(Record),
@@ -50,17 +61,14 @@ get_all(Tab) when is_atom(Tab) ->
     {atomic, Ret}= mnesia:transaction(F),
     Ret.
 
-
-flatzones(TzName) ->
-    F = fun() ->
-		Q = qlc:q([Fz || Fz=#flatzone{tzname=N}<- mnesia:table(flatzone), N=:=TzName]),
-		qlc:e(Q)
-	end,
-    {atomic, Ret}= mnesia:transaction(F),
-    Ret.
-    
-
+%% get a flatzone for a specific date
+%% Date :: {date(), #tztime{}}
+%% returns #flatzone{}
+%%  or throws either error:
+%%    * {ambiguous_zone, [Z1,Z2,...]}
+%%    * {no_zone}
 flatzone(Date, TzName) ->
+    %% @todo validate Date
     F = fun()->
 		Q = qlc:q(
 		      [Fz || Fz=#flatzone{tzname=N} <- mnesia:table(flatzone)
@@ -81,22 +89,6 @@ flatzone(Date, TzName) ->
 	    erlang:error(should_not_happen, {FlatZones, Date, TzName})
     end.
     
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% WRITE - insertion/edit methods
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-insert_all(Records) ->
-    mnesia:transaction(
-      fun() ->
-	      lists:foreach(
-		fun(R)-> mnesia:write(R) end,
-		Records)
-      end).
-			       
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,6 +133,16 @@ create_tabs({error, {_, {already_exists,_}}}) ->
     ok;
 create_tabs(E) ->
     ?debugVal(E).
+
+
+insert_all(Records) ->
+    mnesia:transaction(
+      fun() ->
+	      lists:foreach(
+		fun(R)-> mnesia:write(R) end,
+		Records)
+      end).
+			       
 
 
 

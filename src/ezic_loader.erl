@@ -1,27 +1,38 @@
 -module(ezic_loader).
 -include("include/ezic.hrl").
 
--export([load/1]).
+-export([load/0, load/1]).
+-define(TZDIR, filename:join("priv", "tzdata")).
 
 
+
+load() ->
+    load(?TZDIR).
+
+%% returns all records, parsed from the tzdata files.
 load(File) ->
     {ok, Records} = 
 	case filelib:is_dir(File) of
 	    true -> {ok, parse_dir(File)};
-	    false -> case filelib:is_regular(File) of
-			 true -> {ok, parse_file(File)};
-			 false -> erlang:error(badFile, File)
-		     end
+	    false -> erlang:error(not_done)
+
+		%% case filelib:is_regular(File) of
+		%%     true -> {ok, parse_file(File)};
+		%%     false -> erlang:error(badFile, File)
+		%% end
 	end,
-    {ok, Zones, Rules, Leaps, Links} = ezic_record:separate(Records),
 
-    ezic_db:wipe(),
-    ezic_db:init(),
+    Records.
 
-    ezic_db:insert_all(Zones),
-    ezic_db:insert_all(Rules),
-    ezic_db:insert_all(Leaps),
-    ezic_db:insert_all(Links).
+    %% {ok, Zones, Rules, Leaps, Links} = ezic_record:separate(Records),
+
+    %% ezic_db:wipe(),
+    %% ezic_db:init(),
+
+    %% ezic_db:insert_all(Zones),
+    %% ezic_db:insert_all(Rules),
+    %% ezic_db:insert_all(Leaps),
+    %% ezic_db:insert_all(Links).
     
 
 

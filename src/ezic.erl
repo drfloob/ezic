@@ -78,11 +78,13 @@ load(Folder) ->
 
 
 dev() ->
-    ezic:load(filename:join("priv","tzdata")),
-    ezic_flatten:flatten(),
-
+%    ezic:load(filename:join("priv","tzdata")),
+%    ezic_flatten:flatten(),
 %    Zones= ezic_db:zones("WET"),
 %    ezic_flatten:flatten_all_zones(Zones),
+
+    application:start(ezic),
+    ezic_db_ets:flatzone({{2010,11,17}, #tztime{time={23,42,0}}}, "America/Los_Angeles"),
 
     ok.
 

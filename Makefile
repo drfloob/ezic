@@ -1,6 +1,6 @@
 ERLC_WARNINGS := -W1
 MNESIA_DIR := db
-RUN_INIT := -run ezic_db init
+RUN_INIT := -boot start_sasl  ##-run ezic_db init
 DEBUG := -DNODEBUG -Ddebug
 TEST := 
 TZSET := northamerica
@@ -31,7 +31,8 @@ clean :
 
 
 run :
-	erl -pa ebin -mnesia dir $(MNESIA_DIR) $(RUN_INIT)
+##	erl -pa ebin -mnesia dir $(MNESIA_DIR) $(RUN_INIT)
+	erl -pa ebin $(RUN_INIT)
 
 
 devstart : RUN_INIT += -s ezic dev -s erlang halt
@@ -48,4 +49,5 @@ diff :
 
 
 debug : DEBUG += +debug_info
+##debug : RUN_INIT += -s ezic dev
 debug : all run

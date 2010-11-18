@@ -1,0 +1,10 @@
+{application, ezic,
+ [
+  {registered, []},
+  {applications, [
+                  kernel,       
+                  stdlib
+                 ]},
+  {mod, {ezic_app, []}},
+  {env, [{db_dir, "db"}]}
+ ]}.

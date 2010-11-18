@@ -16,6 +16,7 @@
 -export([
 	 flatten/0
 	 , contains_date/2
+	 , ms/2
 	]).
 
 
@@ -34,6 +35,41 @@ contains_date(FlatZone, Date) ->
     NDate= ezic_date:normalize(Date),
     contains_date2(FlatZone, NDate).
     
+
+%% create matchspec for the given date and name
+%% date is expected to have a tztime with accurate flag
+ms(Date, Name) ->
+
+    M= #flatzone{tzname=Name
+		 , wall_from='$1', wall_to='$2'
+		 , std_from='$3', std_to='$4'
+		 , utc_from='$5', utc_to='$6'
+		 , _='_'},
+    R= ['$_'],
+
+    {D, #tztime{time=T, flag=F}}=Date,
+
+    SDate= {D,T},
+    DComp= {{{D},{T}}},
+
+    G= ms_guards(F, DComp),
+
+    MS= [{M,G,R}],
+
+
+
+    %% @todo move to eunit
+    %% TestFZ= #flatzone{tzname=Name
+    %% 		     , wall_from=SDate, wall_to=SDate
+    %% 		     , std_from=SDate, std_to=SDate
+    %% 		     , utc_from=SDate, utc_to=SDate
+    %% 		     },
+    %% {ok, TestResult}= ets:test_ms(TestFZ, MS),
+    %% io:format("TestFZ: ~p~n", [TestFZ]),
+    %% io:format("MS: ~p~n", [MS]),
+    %% io:format("TestResult: ~p~n", [TestResult]),
+
+    MS.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -293,3 +329,21 @@ maxyear_reached(Atom) when Atom=:=maximum; Atom=:=current ->
     true; % for some N, taking n > N  =>  maximum > ?MAXYEAR
 maxyear_reached(Val) ->
     erlang:error(bad_year, Val).
+
+
+
+
+
+ms_guards(X, D) when X=:=u;X=:=g;X=:=z ->
+    ms_guards2(D, '$6', '$5');
+ms_guards(s, D) ->
+    ms_guards2(D, '$3', '$4');
+ms_guards(X, D) when X=:=w;X=:=undefined ->
+    ms_guards2(D, '$1', '$2').
+    
+
+ms_guards2(D, From, To) ->
+    [
+     {'=<', From, D}
+     , {'=<', D, To}
+    ].
