@@ -10,6 +10,9 @@
 	 , rules/1
 	 , flatzone/2
 	 , all/1
+	 %, insert_all/1
+	 , wipe/1
+	 , flatten/0
 	]).
 
 
@@ -37,17 +40,28 @@ rules(TzName) ->
     gen_server:call(?MODULE, {rules, TzName}).
 
 
-
 flatzone(Date, TzName) ->
     gen_server:call(?MODULE, {flatzone, Date, TzName}).
-
 
 
 all(Tab) ->
     gen_server:call(?MODULE, {all, Tab}).
 
 
+%insert_all(Records) ->
+%    gen_server:call(?MODULE, {insert_all, Records}).
 
+
+%wipe() ->
+%    gen_server:call(?MODULE, {wipe}).
+
+
+wipe(Tab) ->
+    gen_server:call(?MODULE, {wipe, Tab}).
+
+
+flatten() ->
+    gen_server:call(?MODULE, {flatten}).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,6 +92,18 @@ handle_call({all, Table}, _, Ets) ->
 handle_call({flatzone, Date, Name}, _, Ets) ->
     Matches= ets:select(Ets, ezic_flatten:ms(Date, Name)),
     {reply, Matches, Ets};
+%handle_call({insert_all, Records}, _, Ets) ->
+%    Result= ets:insert(Ets, Records),
+%    {reply, Result, Ets};
+%handle_call({wipe}, _, Ets) ->
+%    Result= ets:delete(Ets),
+%    {reply, Result, Ets};
+handle_call({wipe, Tab}, _, Ets) ->
+    Result= ets:delete(Ets, Tab),
+    {reply, Result, Ets};
+handle_call({flatten}, _, Ets) ->
+    Result= ezic_flatten:flatten(Ets),
+    {reply, Result, Ets};
 handle_call(_, _, Ets) ->
     {noreply, Ets}.
 

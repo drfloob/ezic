@@ -36,7 +36,7 @@ localtime(TzName) ->
 
 utc_to_local(UTCDatetime, TzName) ->
     NormalDatetime= ezic_date:normalize(UTCDatetime, u),
-    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(NormalDatetime, TzName),
+    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db_ets:flatzone(NormalDatetime, TzName),
     
     ezic_date:add_offset(
       ezic_date:add_offset(
@@ -47,7 +47,7 @@ utc_to_local(UTCDatetime, TzName) ->
 
 local_to_utc(LocalDatetime, TzName) ->
     NormalDatetime= ezic_date:normalize(LocalDatetime, w),
-    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(NormalDatetime, TzName),
+    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db_ets:flatzone(NormalDatetime, TzName),
     
     ezic_date:add_offset(
       ezic_date:add_offset(
@@ -94,8 +94,8 @@ zf() ->
     
 
 reflatten() ->
-    ezic_db:wipe(flatzone),
-    ezic_flatten:flatten().
+    ezic_db_ets:wipe(flatzone),
+    ezic_db_ets:flatten().
 
 
 
@@ -116,7 +116,7 @@ test() ->
 current_as_of_utc(UTCDatetime, TzName) ->
     CZone= ezic_zone:current_as_of_utc(UTCDatetime, TzName),
     RuleName= CZone#zone.rule,
-    Rules= ezic_db:rules(RuleName),
+    Rules= ezic_db_ets:rules(RuleName),
     CRule= ezic_rule:current_as_of_utc(UTCDatetime, Rules),
     {ok, CZone, CRule}.
     

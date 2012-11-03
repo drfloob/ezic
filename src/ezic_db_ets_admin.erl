@@ -37,11 +37,11 @@
 init() ->
     {ok, DbDir}= application:get_env(db_dir),
     Filename= filename:join(DbDir, ?DB_FILENAME),
-    Tabfile= case db_sane(Filename) of 
+    Ets= case db_sane(Filename) of 
 	true -> load_tabfile(Filename);
 	false -> create_tables(Filename)
     end,
-    {ok, Tabfile}.
+    {ok, Ets}.
 
 
 % erases all data
@@ -61,7 +61,7 @@ insert_all(Record) ->
 
 % erases date for one table
 wipe(Tab) ->
-    not_done.
+    ezic_db_ets:wipe(Tab).
 
 
 
@@ -84,13 +84,14 @@ db_sane(Filename) ->
 
 %% creates the dets table and populates it.
 create_tables(Filename) ->
-    Tab= ets:new(ezic_ets_db, [duplicate_bag]),
-    ets:insert(Tab, ezic_loader:load()),
+    Ets= ets:new(ezic_ets_db, [duplicate_bag]),
+    ets:insert(Ets, ezic_loader:load()),
+    ezic_flatten:flatten(Ets),
 
     % save to disk
-    ets:tab2file(Tab, Filename),
+    ets:tab2file(Ets, Filename),
 
-    Tab.
+    Ets.
 
 
 
@@ -105,6 +106,3 @@ load_tabfile(Filename) ->
 ets_from_dets(Dets) ->
     Ets= ets:new(tzdb, ?ETS_OPTS),
     dets:to_ets(Dets, Ets).
-
-
-
