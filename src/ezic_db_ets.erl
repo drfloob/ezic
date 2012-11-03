@@ -90,8 +90,18 @@ handle_call({all, Table}, _, Ets) ->
     Matches= ets:lookup(Ets, Table),
     {reply, Matches, Ets};
 handle_call({flatzone, Date, Name}, _, Ets) ->
-    Matches= ets:select(Ets, ezic_flatten:ms(Date, Name)),
-    {reply, Matches, Ets};
+    FlatZones= ets:select(Ets, ezic_flatten:ms(Date, Name)),
+    Result= case length(FlatZones) of
+		1 ->
+		    hd(FlatZones);
+		2 ->
+		    erlang:error(ambiguous_zone, FlatZones);
+		0 ->
+		    erlang:error(no_zone);
+		_ ->
+		    erlang:error(should_not_happen, {FlatZones, Date, Name})
+	    end,
+    {reply, Result, Ets};
 %handle_call({insert_all, Records}, _, Ets) ->
 %    Result= ets:insert(Ets, Records),
 %    {reply, Result, Ets};
