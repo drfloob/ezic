@@ -15,15 +15,15 @@
 
 
 -export([
-	 flatten/1
+	 flatten/0
 	 , contains_date/2
 	 , ms/2
 	]).
 
 
-flatten(Ets) ->
-    AllZones= ets:lookup(Ets, zone),
-    flatten_all_zones(Ets, AllZones),
+flatten() ->
+    AllZones= ets:lookup(zone, zone),
+    flatten_all_zones(AllZones),
     done.
 
 
@@ -75,16 +75,16 @@ ms(Date, Name) ->
 
 % recursively processes sets of similar zones until they're all done,
 % passing zone sets to flatten_zone_set/1
-flatten_all_zones(Ets, []) ->
+flatten_all_zones([]) ->
     done;
-flatten_all_zones(Ets, [Z1|_]= AllZones) ->
+flatten_all_zones([Z1|_]= AllZones) ->
     io:format("Flattening zones: ~s~n", [Z1#zone.name]),
     {CurrentZones, RestZones}= ezic_zone:split_by_name(Z1, AllZones),
 
-    Flats= flatten_zone_set(Ets, CurrentZones),
-    ets:insert(Ets, Flats),
+    Flats= flatten_zone_set(CurrentZones),
+    ets:insert(flatzone, Flats),
 
-    flatten_all_zones(Ets, RestZones).
+    flatten_all_zones(RestZones).
 
 
 
@@ -109,8 +109,8 @@ contains_date2(FlatZone=#flatzone{wall_from=From, wall_to=To}, {Dt,#tztime{time=
 %% gathers relevant rules and creates flat periods of the same gmt
 %% offset (#flatzone). This is a recursive solution, eliminating Zones
 %% from the list until it's been exhausted
-flatten_zone_set(Ets, Zones) ->
-    flatten_zone_set(Ets, ?MINFLAT, Zones, [], none).
+flatten_zone_set(Zones) ->
+    flatten_zone_set(?MINFLAT, Zones, [], none).
 
 
 % flatten_zone_set(FromTime, Zones, Flats) -> [#flatzone{}]
@@ -119,7 +119,7 @@ flatten_zone_set(Ets, Zones) ->
 %    Flats= [#flatzone{}]
 %
 % assumes a new zone every time it is called
-flatten_zone_set(Ets, FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
+flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
 		 , Zones %[Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | _RestZones], 
 		 , Flats
 		 , CurrentRule) ->
@@ -141,7 +141,7 @@ flatten_zone_set(Ets, FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffs
     
 
     %% we gather all rules that _may_ apply
-    Rules= ets:select(Ets, [{#rule{name=RuleName, _='_'}, [], ['$_']}]),
+    Rules= ets:select(rule, [{#rule{name=RuleName, _='_'}, [], ['$_']}]),
     
     
     ?debugVal(FromTime),
@@ -165,7 +165,7 @@ flatten_zone_set(Ets, FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffs
 	    ?debugMsg("maxyear reached from flatten_zone_set"),
 	    FinalFlats;
 	false -> 
-	    flatten_zone_set(Ets, NextFlat, RestZones, FinalFlats, EndingRule)
+	    flatten_zone_set(NextFlat, RestZones, FinalFlats, EndingRule)
     catch 
 	exit:Reason ->
 	    ?debugMsg("bad year for nextflat:"),

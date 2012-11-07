@@ -80,17 +80,17 @@ init(_) ->
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-handle_call({zones, Name}, _, Ets) ->
-    Matches= ets:select(Ets, [{#zone{name=Name, _='_'}, [], ['$_']}]),
-    {reply, Matches, Ets};
-handle_call({rules, Name}, _, Ets) ->
-    Matches= ets:select(Ets, [{#rule{name=Name, _='_'}, [], ['$_']}]),
-    {reply, Matches, Ets};
-handle_call({all, Table}, _, Ets) ->
-    Matches= ets:lookup(Ets, Table),
-    {reply, Matches, Ets};
-handle_call({flatzone, Date, Name}, _, Ets) ->
-    FlatZones= ets:select(Ets, ezic_flatten:ms(Date, Name)),
+handle_call({zones, Name}, _, State) ->
+    Matches= ets:select(zone, [{#zone{name=Name, _='_'}, [], ['$_']}]),
+    {reply, Matches, State};
+handle_call({rules, Name}, _, State) ->
+    Matches= ets:select(rule, [{#rule{name=Name, _='_'}, [], ['$_']}]),
+    {reply, Matches, State};
+handle_call({all, Tab}, _, State) ->
+    Matches= ets:lookup(Tab, Tab),
+    {reply, Matches, State};
+handle_call({flatzone, Date, Name}, _, State) ->
+    FlatZones= ets:select(flatzone, ezic_flatten:ms(Date, Name)),
     Result= case length(FlatZones) of
 		1 ->
 		    hd(FlatZones);
@@ -101,21 +101,21 @@ handle_call({flatzone, Date, Name}, _, Ets) ->
 		_ ->
 		    erlang:error(should_not_happen, {FlatZones, Date, Name})
 	    end,
-    {reply, Result, Ets};
+    {reply, Result, State};
 %handle_call({insert_all, Records}, _, Ets) ->
 %    Result= ets:insert(Ets, Records),
 %    {reply, Result, Ets};
 %handle_call({wipe}, _, Ets) ->
 %    Result= ets:delete(Ets),
 %    {reply, Result, Ets};
-handle_call({wipe, Tab}, _, Ets) ->
-    Result= ets:delete(Ets, Tab),
-    {reply, Result, Ets};
-handle_call({flatten}, _, Ets) ->
-    Result= ezic_flatten:flatten(Ets),
-    {reply, Result, Ets};
-handle_call(_, _, Ets) ->
-    {noreply, Ets}.
+handle_call({wipe, Tab}, _, State) ->
+    Result= ets:delete(Tab, Tab),
+    {reply, Result, State};
+handle_call({flatten}, _, State) ->
+    Result= ezic_flatten:flatten(),
+    {reply, Result, State};
+handle_call(_, _, State) ->
+    {noreply, State}.
 
 
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
