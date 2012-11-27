@@ -1,5 +1,6 @@
 -module(ezic_flatten).
 -include("include/ezic.hrl").
+-define(NODEBUG, true).
 -include_lib("eunit/include/eunit.hrl").
 
 
@@ -20,13 +21,8 @@
 	]).
 
 
-%% debug
--export([flatten_all_zones/1]).
-
-
-
 flatten() ->
-    AllZones= ezic_db:get_all(zone),
+    AllZones= ets:lookup(zone, zone),
     flatten_all_zones(AllZones),
     done.
 
@@ -86,7 +82,7 @@ flatten_all_zones([Z1|_]= AllZones) ->
     {CurrentZones, RestZones}= ezic_zone:split_by_name(Z1, AllZones),
 
     Flats= flatten_zone_set(CurrentZones),
-    ezic_db:insert_all(Flats),
+    ets:insert(flatzone, Flats),
 
     flatten_all_zones(RestZones).
 
@@ -145,7 +141,7 @@ flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
     
 
     %% we gather all rules that _may_ apply
-    Rules= ezic_db:rules(RuleName),
+    Rules= ets:select(rule, [{#rule{name=RuleName, _='_'}, [], ['$_']}]),
     
     
     ?debugVal(FromTime),

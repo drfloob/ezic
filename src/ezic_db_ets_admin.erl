@@ -37,11 +37,11 @@
 init() ->
     {ok, DbDir}= application:get_env(db_dir),
     Filename= filename:join(DbDir, ?DB_FILENAME),
-    Tabfile= case db_sane(Filename) of 
+    case db_sane(Filename) of 
 	true -> load_tabfile(Filename);
 	false -> create_tables(Filename)
     end,
-    {ok, Tabfile}.
+    {ok, []}.
 
 
 % erases all data
@@ -61,7 +61,7 @@ insert_all(Record) ->
 
 % erases date for one table
 wipe(Tab) ->
-    not_done.
+    ezic_db_ets:wipe(Tab).
 
 
 
@@ -84,20 +84,50 @@ db_sane(Filename) ->
 
 %% creates the dets table and populates it.
 create_tables(Filename) ->
-    Tab= ets:new(ezic_ets_db, [duplicate_bag]),
-    ets:insert(Tab, ezic_loader:load()),
+    {ok, Zones, Rules, _, _} = ezic_record:separate(ezic_loader:load()),
+
+    ets:new(zone, [duplicate_bag, named_table]),
+    ets:insert(zone, Zones),
+
+    ets:new(rule, [duplicate_bag, named_table]),
+    ets:insert(rule, Rules),
+
+    ets:new(flatzone, [duplicate_bag, named_table]),
+    ezic_flatten:flatten(),
+
+    % combine into one ets
+    Ets= ets:new(ezic_db_ets, [duplicate_bag]),
+    ets:insert(Ets, ets:lookup(zone, zone)),
+    ets:insert(Ets, ets:lookup(rule, rule)),
+    ets:insert(Ets, ets:lookup(flatzone, flatzone)),
 
     % save to disk
-    ets:tab2file(Tab, Filename),
+    ets:tab2file(Ets, Filename),
 
-    Tab.
+    ets:delete(Ets),
+
+    ok.
 
 
 
 %% loads or creates the dets table.
 load_tabfile(Filename) ->
-    {ok, Name}= ets:file2tab(Filename),
-    Name.
+    {ok, Ets}= ets:file2tab(Filename),
+
+    Zones= ets:lookup(Ets, zone),
+    ets:new(zone, [duplicate_bag, named_table]),
+    ets:insert(zone, Zones),
+
+    Rules= ets:lookup(Ets, rule),
+    ets:new(rule, [duplicate_bag, named_table]),
+    ets:insert(rule, Rules),
+
+    FlatZones= ets:lookup(Ets, flatzone),
+    ets:new(flatzone, [duplicate_bag, named_table]),
+    ets:insert(flatzone, FlatZones),
+
+    ets:delete(Ets),
+    ok.
 
 
 
@@ -105,6 +135,3 @@ load_tabfile(Filename) ->
 ets_from_dets(Dets) ->
     Ets= ets:new(tzdb, ?ETS_OPTS),
     dets:to_ets(Dets, Ets).
-
-
-
