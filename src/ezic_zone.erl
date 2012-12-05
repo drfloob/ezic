@@ -1,6 +1,5 @@
 -module(ezic_zone).
 -include("include/ezic.hrl").
--define(NODEBUG, true).
 -include_lib("eunit/include/eunit.hrl").
 
 -export([
@@ -42,7 +41,7 @@ current(TzName) ->
     current_as_of_utc(erlang:universaltime(), TzName).
 
 current_as_of_utc(UTCDatetime, TzName) ->
-    Zones= ezic_db_ets:zones(TzName),
+    Zones= ezic_db:zones(TzName),
     get_zone_utc(UTCDatetime, Zones).
 
 

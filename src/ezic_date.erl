@@ -251,7 +251,7 @@ when is_integer(Y1), is_integer(Y2)
 compare({Date1, #tztime{time=Time1, flag=F}}
 	, {Date2, #tztime{time=Time2, flag=F}}) ->
     
-    Date1 =< Date2 orelse Time1 =< time2;
+    Date1 =< Date2 orelse Time1 =< Time2;
 
 compare(X,Y) ->
     erlang:error(bad_dates, [X,Y]).

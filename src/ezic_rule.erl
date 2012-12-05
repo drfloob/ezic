@@ -58,7 +58,7 @@ years(#rule{from=From, to=To}) ->
 %% calculation stops after a fixed year, configurable above.
 years_after(Y, {F,M}) when M=:=max; M=:=maximum ->
     {erlang:max(Y,F), M};
-years_after(Y, {From, To}) when Y > To ->
+years_after(Y, {_From, To}) when Y > To ->
     none;
 years_after(Y, {From, To}) ->
     {erlang:max(Y,From), To}.

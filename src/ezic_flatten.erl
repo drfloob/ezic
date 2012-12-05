@@ -1,6 +1,5 @@
 -module(ezic_flatten).
 -include("include/ezic.hrl").
--define(NODEBUG, true).
 -include_lib("eunit/include/eunit.hrl").
 
 
@@ -22,7 +21,7 @@
 
 
 flatten() ->
-    AllZones= ets:lookup(zone, zone),
+    AllZones= ezic_db:get_all(zone),
     flatten_all_zones(AllZones),
     done.
 
@@ -45,7 +44,7 @@ ms(Date, Name) ->
 
     {D, #tztime{time=T, flag=F}}=Date,
 
-    SDate= {D,T},
+    %SDate= {D,T},
     DComp= {{{D},{T}}},
 
     G= ms_guards(F, DComp),
@@ -82,22 +81,22 @@ flatten_all_zones([Z1|_]= AllZones) ->
     {CurrentZones, RestZones}= ezic_zone:split_by_name(Z1, AllZones),
 
     Flats= flatten_zone_set(CurrentZones),
-    ets:insert(flatzone, Flats),
+    ezic_db:insert_all(Flats),
 
     flatten_all_zones(RestZones).
 
 
 
-contains_date2(FlatZone=#flatzone{utc_from=From, utc_to=To}, {Dt,#tztime{time=T, flag=F}}) 
+contains_date2(#flatzone{utc_from=From, utc_to=To}, {Dt,#tztime{time=T, flag=F}}) 
   when F=:= u; F=:= g; F=:=z ->
     Date={Dt, T},
     ezic_date:compare(From, Date) andalso ezic_date:compare(Date, To);
 
-contains_date2(FlatZone=#flatzone{std_from=From, std_to=To}, {Dt,#tztime{time=T, flag=s}})  ->
+contains_date2(#flatzone{std_from=From, std_to=To}, {Dt,#tztime{time=T, flag=s}})  ->
     Date={Dt, T},
     ezic_date:compare(From, Date) andalso ezic_date:compare(Date, To);
     
-contains_date2(FlatZone=#flatzone{wall_from=From, wall_to=To}, {Dt,#tztime{time=T, flag=F}})
+contains_date2(#flatzone{wall_from=From, wall_to=To}, {Dt,#tztime{time=T, flag=F}})
   when F=:=w; F=:=undefined ->
     Date={Dt, T},
     ezic_date:compare(From, Date) andalso ezic_date:compare(Date, To).
@@ -141,7 +140,7 @@ flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
     
 
     %% we gather all rules that _may_ apply
-    Rules= ets:select(rule, [{#rule{name=RuleName, _='_'}, [], ['$_']}]),
+    Rules= ezic_db:rules(RuleName),
     
     
     ?debugVal(FromTime),

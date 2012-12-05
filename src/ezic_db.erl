@@ -1,149 +1,125 @@
 -module(ezic_db).
 -include("include/ezic.hrl").
--include_lib("stdlib/include/qlc.hrl").
 -include_lib("eunit/include/eunit.hrl").
+
+-behaviour(gen_server).
 
 
 -export([
 	 zones/1
 	 , rules/1
 	 , flatzone/2
+	 %, insert/2
+	 , get_all/1
+	 , insert_all/1
+	 , wipe/1
+	 , flatten/0
 	]).
 
 -export([
-	 wipe/0
-	 , wipe/1
-	 , init/0
-	 , insert_all/1
-	 , get_all/1
-	]).
+	 start_link/0
+	 , init/1
+	 , code_change/3
+	 , handle_call/3
+	 , handle_cast/2
+	 , handle_info/2
+	 , terminate/2
+	 ]).
 
 
--define(create(Record),
-	{atomic, ok} = mnesia:create_table(Record, 
-			   [{type, bag}
-			    , {disc_copies, [node()]}
-			    , {attributes, record_info(fields, Record)}
-			   ])).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PUBLIC API
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% READ - db reading methods
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+zones(TzName) ->
+    gen_server:call(?MODULE, {zones, TzName}).
 
 
+rules(TzName) ->
+    gen_server:call(?MODULE, {rules, TzName}).
 
-% retrieve all zones by name
-zones(Name) ->
-    F = fun()->
-		Q = qlc:q([Z || Z=#zone{name=N} <- mnesia:table(zone), N=:=Name]),
-		qlc:e(Q)
-	end,
-    {atomic, Zones}= mnesia:transaction(F),
-    Zones.
-    
-% retrieve all rules by name
-rules(Name) ->
-    F = fun()->
-		Q = qlc:q([R || R=#rule{name=N} <- mnesia:table(rule), N=:=Name]),
-		qlc:e(Q)
-	end,
-    {atomic, Rules}= mnesia:transaction(F),
-    Rules.
-    
-% get all records from table
-get_all(Tab) when is_atom(Tab) ->
-    F = fun() ->
-		Q = qlc:q([R || R<- mnesia:table(Tab)]),
-		qlc:e(Q)
-	end,
-    {atomic, Ret}= mnesia:transaction(F),
-    Ret.
 
-%% get a flatzone for a specific date
-%% Date :: {date(), #tztime{}}
-%% returns #flatzone{}
-%%  or throws either error:
-%%    * {ambiguous_zone, [Z1,Z2,...]}
-%%    * {no_zone}
 flatzone(Date, TzName) ->
-    %% @todo validate Date
-    F = fun()->
-		Q = qlc:q(
-		      [Fz || Fz=#flatzone{tzname=N} <- mnesia:table(flatzone)
-				 , N=:=TzName
-				 , ezic_flatten:contains_date(Fz, Date)]),
-		qlc:e(Q)
-	end,
-    {atomic, FlatZones}= mnesia:transaction(F),
-
-    case length(FlatZones) of
-	1 ->
-	    hd(FlatZones);
-	2 ->
-	    erlang:error(ambiguous_zone, FlatZones);
-	0 ->
-	    erlang:error(no_zone);
-	_ ->
-	    erlang:error(should_not_happen, {FlatZones, Date, TzName})
-    end.
-    
+    gen_server:call(?MODULE, {flatzone, Date, TzName}).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ADMIN - initialization and administration methods
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-% initialize the db
-init() ->
-    create_tabs(mnesia:create_schema([node()])),
-    mnesia:wait_for_tables([rule, zone, link, leap, flatzone], 3000).
-
-
-% WARNING: deletes all db files
-wipe() ->
-    mnesia:stop(),
-    mnesia:delete_schema([node()]).
-
-
-
-% WARNING: deletes all entries in table Tab
-wipe(Tab) ->
-    mnesia:transaction(
-      fun()->
-	      mnesia:delete(Tab, '_', write)
-      end).
-
-
-
-create_tabs(ok) ->
-    mnesia:start(),
-
-    ?create(rule),
-    ?create(zone),
-    ?create(link),
-    ?create(leap),
-    ?create(flatzone),
-
-    ok;
-create_tabs({error, {_, {already_exists,_}}}) ->
-    mnesia:start(),
-    ok;
-create_tabs(E) ->
-    ?debugVal(E).
+get_all(Tab) ->
+    gen_server:call(?MODULE, {all, Tab}).
 
 
 insert_all(Records) ->
-    mnesia:transaction(
-      fun() ->
-	      lists:foreach(
-		fun(R)-> mnesia:write(R) end,
-		Records)
-      end).
-			       
+    gen_server:call(?MODULE, {insert_all, Records}).
 
 
+%wipe() ->
+%    gen_server:call(?MODULE, {wipe}).
 
 
+wipe(Tab) ->
+    gen_server:call(?MODULE, {wipe, Tab}).
+
+
+flatten() ->
+    gen_server:call(?MODULE, {flatten}).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% GEN_SERVER 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+start_link() ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+init(_) ->
+    ezic_db_ets:init(),
+    {ok, []}.
+
+%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% DB Lookup
+%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+handle_call({zones, Name}, _, State) ->
+    Matches= ezic_db_ets:zones(Name),
+    {reply, Matches, State};
+handle_call({rules, Name}, _, State) ->
+    Matches= ezic_db_ets:rules(Name),
+    {reply, Matches, State};
+handle_call({all, Tab}, _, State) ->
+    Matches= ezic_db_ets:get_all(Tab),
+    {reply, Matches, State};
+handle_call({flatzone, Date, Name}, _, State) ->
+    Result= ezic_db_ets:flatzone(Date, Name),
+    {reply, Result, State};
+handle_call({insert_all, Records}, _, State) ->
+    ezic_db_ets:insert_all(Records),
+    {noreply, State};
+handle_call({wipe, Tab}, _, State) ->
+    Result= ezic_db_ets:wipe(Tab),
+    {reply, Result, State};
+handle_call({flatten}, _, State) ->
+    Result= ezic_flatten:flatten(),
+    {reply, Result, State};
+handle_call(_, _, State) ->
+    {noreply, State}.
+
+
+%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% Other gen_server
+%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+code_change(_, State, _) ->
+    {ok, State}.
+
+
+handle_cast(_, State) ->
+    {noreply, State}.
+
+handle_info(_, State) ->
+    {noreply, State}.
+
+terminate(_, _State) ->
+    ok.

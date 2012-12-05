@@ -40,7 +40,7 @@ start_link(_) ->
 %% specifications.
 %%--------------------------------------------------------------------
 init(_) ->
-    EzicDb = {ezic_db_ets,{ezic_db_ets, start_link, []},
+    EzicDb = {ezic_db,{ezic_db, start_link, []},
 	      permanent,2000,worker,[ezic_db_ets]},
     {ok,{{one_for_all,3,30}, [EzicDb]}}.
 

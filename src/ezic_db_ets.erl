@@ -2,30 +2,18 @@
 -include("include/ezic.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
--behaviour(gen_server).
-
+-define(DB_FILENAME, "db.e2f").
 
 -export([
-	 zones/1
+	 init/0
+	 , zones/1
 	 , rules/1
 	 , flatzone/2
-	 , all/1
-	 %, insert_all/1
+	 %, insert/2
+	 , get_all/1
+	 , insert_all/1
 	 , wipe/1
-	 , flatten/0
 	]).
-
-
--export([
-	 start_link/0
-	 , init/1
-	 , code_change/3
-	 , handle_call/3
-	 , handle_cast/2
-	 , handle_info/2
-	 , terminate/2
-	 ]).
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PUBLIC API
@@ -33,23 +21,38 @@
 
 
 zones(TzName) ->
-    gen_server:call(?MODULE, {zones, TzName}).
+    ets:select(zone, [{#zone{name=TzName, _='_'}, [], ['$_']}]).
 
 
 rules(TzName) ->
-    gen_server:call(?MODULE, {rules, TzName}).
+    ets:select(rule, [{#rule{name=TzName, _='_'}, [], ['$_']}]).
 
 
 flatzone(Date, TzName) ->
-    gen_server:call(?MODULE, {flatzone, Date, TzName}).
+    FlatZones= ets:select(flatzone, ezic_flatten:ms(Date, TzName)),
+    case length(FlatZones) of
+	1 ->
+	    hd(FlatZones);
+	2 ->
+	    erlang:error(ambiguous_zone, FlatZones);
+	0 ->
+	    erlang:error(no_zone);
+	_ ->
+	    erlang:error(should_not_happen, {FlatZones, Date, TzName})
+    end.
 
 
-all(Tab) ->
-    gen_server:call(?MODULE, {all, Tab}).
+get_all(Tab) ->
+    ets:lookup(Tab, Tab).
 
 
-%insert_all(Records) ->
-%    gen_server:call(?MODULE, {insert_all, Records}).
+insert_all(Records) ->
+    Zones= [ZI || ZI <- Records, ZI = #zone{}],
+    ets:insert(zone, Zones),
+    Rules= [RI || RI <- Records, RI = #rule{}],
+    ets:insert(rule, Rules),
+    FlatZones= [FZ || FZ <- Records, FZ = #flatzone{}],
+    ets:insert(flatzone, FlatZones).
 
 
 %wipe() ->
@@ -57,81 +60,78 @@ all(Tab) ->
 
 
 wipe(Tab) ->
-    gen_server:call(?MODULE, {wipe, Tab}).
+    ets:delete(Tab, Tab).
 
 
-flatten() ->
-    gen_server:call(?MODULE, {flatten}).
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% GEN_SERVER 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
-
-init(_) ->
-    ezic_db_ets_admin:init().
+init() ->
+    {ok, DbDir}= application:get_env(db_dir),
+    Filename= filename:join(DbDir, ?DB_FILENAME),
+    case db_sane(Filename) of 
+	true -> load_tabfile(Filename);
+	false -> create_tables(Filename)
+    end,
+    {ok, []}.
 
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% DB Lookup
+%% Private functions for initializing ets
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-handle_call({zones, Name}, _, State) ->
-    Matches= ets:select(zone, [{#zone{name=Name, _='_'}, [], ['$_']}]),
-    {reply, Matches, State};
-handle_call({rules, Name}, _, State) ->
-    Matches= ets:select(rule, [{#rule{name=Name, _='_'}, [], ['$_']}]),
-    {reply, Matches, State};
-handle_call({all, Tab}, _, State) ->
-    Matches= ets:lookup(Tab, Tab),
-    {reply, Matches, State};
-handle_call({flatzone, Date, Name}, _, State) ->
-    FlatZones= ets:select(flatzone, ezic_flatten:ms(Date, Name)),
-    Result= case length(FlatZones) of
-		1 ->
-		    hd(FlatZones);
-		2 ->
-		    erlang:error(ambiguous_zone, FlatZones);
-		0 ->
-		    erlang:error(no_zone);
-		_ ->
-		    erlang:error(should_not_happen, {FlatZones, Date, Name})
-	    end,
-    {reply, Result, State};
-%handle_call({insert_all, Records}, _, Ets) ->
-%    Result= ets:insert(Ets, Records),
-%    {reply, Result, Ets};
-%handle_call({wipe}, _, Ets) ->
-%    Result= ets:delete(Ets),
-%    {reply, Result, Ets};
-handle_call({wipe, Tab}, _, State) ->
-    Result= ets:delete(Tab, Tab),
-    {reply, Result, State};
-handle_call({flatten}, _, State) ->
-    Result= ezic_flatten:flatten(),
-    {reply, Result, State};
-handle_call(_, _, State) ->
-    {noreply, State}.
+%% -> true if table exists
+db_sane(Filename) ->
+    %% @todo ensure data is present for each record type.
+
+    case ets:tabfile_info(Filename) of
+	{ok, _} -> true;
+	{error, _} -> false
+    end.
+    
 
 
-%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% Other gen_server
-%%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% creates the dets table and populates it.
+create_tables(Filename) ->
+    {ok, Zones, Rules, _, _} = ezic_record:separate(ezic_loader:load()),
+
+    ets:new(zone, [duplicate_bag, named_table]),
+    true = ets:insert(zone, Zones),
+
+    ets:new(rule, [duplicate_bag, named_table]),
+    true = ets:insert(rule, Rules),
+
+    ets:new(flatzone, [duplicate_bag, named_table]),
+    io:format("~p~n", [Rules]),
+    ezic_flatten:flatten(),
+
+    % combine into one ets
+    Ets= ets:new(ezic_db_ets, [duplicate_bag]),
+    ets:insert(Ets, ets:lookup(zone, zone)),
+    ets:insert(Ets, ets:lookup(rule, rule)),
+    ets:insert(Ets, ets:lookup(flatzone, flatzone)),
+
+    % save to disk
+    ets:tab2file(Ets, Filename),
+
+    ets:delete(Ets),
+
+    ok.
 
 
-code_change(_, State, _) ->
-    {ok, State}.
 
+%% loads or creates the dets table.
+load_tabfile(Filename) ->
+    {ok, Ets}= ets:file2tab(Filename),
 
-handle_cast(_, State) ->
-    {noreply, State}.
+    Zones= ets:lookup(Ets, zone),
+    ets:new(zone, [duplicate_bag, named_table]),
+    ets:insert(zone, Zones),
 
-handle_info(_, State) ->
-    {noreply, State}.
+    Rules= ets:lookup(Ets, rule),
+    ets:new(rule, [duplicate_bag, named_table]),
+    ets:insert(rule, Rules),
 
-terminate(_, State) ->
+    FlatZones= ets:lookup(Ets, flatzone),
+    ets:new(flatzone, [duplicate_bag, named_table]),
+    ets:insert(flatzone, FlatZones),
+
+    ets:delete(Ets),
     ok.

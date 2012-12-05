@@ -36,7 +36,7 @@ localtime(TzName) ->
 
 utc_to_local(UTCDatetime, TzName) ->
     NormalDatetime= ezic_date:normalize(UTCDatetime, u),
-    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db_ets:flatzone(NormalDatetime, TzName),
+    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(NormalDatetime, TzName),
     
     ezic_date:add_offset(
       ezic_date:add_offset(
@@ -47,7 +47,7 @@ utc_to_local(UTCDatetime, TzName) ->
 
 local_to_utc(LocalDatetime, TzName) ->
     NormalDatetime= ezic_date:normalize(LocalDatetime, w),
-    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db_ets:flatzone(NormalDatetime, TzName),
+    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(NormalDatetime, TzName),
     
     ezic_date:add_offset(
       ezic_date:add_offset(
@@ -84,7 +84,7 @@ dev() ->
 %    ezic_flatten:flatten_all_zones(Zones),
 
     application:start(ezic),
-    ezic_db_ets:flatzone({{2010,11,17}, #tztime{time={23,42,0}}}, "America/Los_Angeles"),
+    ezic_db:flatzone({{2010,11,17}, #tztime{time={23,42,0}}}, "America/Los_Angeles"),
 
     ok.
 
@@ -94,8 +94,8 @@ zf() ->
     
 
 reflatten() ->
-    ezic_db_ets:wipe(flatzone),
-    ezic_db_ets:flatten().
+    ezic_db:wipe(flatzone),
+    ezic_db:flatten().
 
 
 
@@ -113,20 +113,20 @@ test() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-current_as_of_utc(UTCDatetime, TzName) ->
-    CZone= ezic_zone:current_as_of_utc(UTCDatetime, TzName),
-    RuleName= CZone#zone.rule,
-    Rules= ezic_db_ets:rules(RuleName),
-    CRule= ezic_rule:current_as_of_utc(UTCDatetime, Rules),
-    {ok, CZone, CRule}.
+%current_as_of_utc(UTCDatetime, TzName) ->
+%    CZone= ezic_zone:current_as_of_utc(UTCDatetime, TzName),
+%    RuleName= CZone#zone.rule,
+%    Rules= ezic_db:rules(RuleName),
+%    CRule= ezic_rule:current_as_of_utc(UTCDatetime, Rules),
+%    {ok, CZone, CRule}.
     
 
 %%current_as_of_local(Datetime, TzName) ->
 %%    not_done.
 
 
-time_offset(Zone, Rule) ->
-    OffsetSec= ezic_zone:offset_sec(Zone),
-    DSTSec= ezic_rule:dst_sec(Rule),
-    OffsetSec + DSTSec.
+%time_offset(Zone, Rule) ->
+%    OffsetSec= ezic_zone:offset_sec(Zone),
+%    DSTSec= ezic_rule:dst_sec(Rule),
+%    OffsetSec + DSTSec.
     
