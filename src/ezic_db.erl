@@ -100,7 +100,10 @@ handle_call({wipe, Tab}, _, State) ->
     Result= ezic_db_ets:wipe(Tab),
     {reply, Result, State};
 handle_call({flatten}, _, State) ->
-    Result= ezic_flatten:flatten(),
+    Zones= ezic_db_ets:get_all(zone),
+    Rules= ezic_db_ets:get_all(rule),
+    FlatZone= ezic_flatten:flatten(Zones, Rules),
+    Result= ezic_db_ets:insert_all(FlatZone),
     {reply, Result, State};
 handle_call(_, _, State) ->
     {noreply, State}.

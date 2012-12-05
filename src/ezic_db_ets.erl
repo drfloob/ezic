@@ -100,7 +100,8 @@ create_tables(Filename) ->
 
     ets:new(flatzone, [duplicate_bag, named_table]),
     io:format("~p~n", [Rules]),
-    ezic_flatten:flatten(),
+    FlatZones = ezic_flatten:flatten(Zones, Rules),
+    true = ets:insert(flatzone, FlatZones),
 
     % combine into one ets
     Ets= ets:new(ezic_db_ets, [duplicate_bag]),

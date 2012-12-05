@@ -126,7 +126,8 @@ create_tabs(ok) ->
     {ok, Zones, Rules, _, _} = ezic_record:separate(ezic_loader:load()),
     insert_all(Zones),
     insert_all(Rules),
-    ezic_flatten:flatten(),
+    FlatZones = ezic_flatten:flatten(Zones, Rules),
+    insert_all(FlatZones),
 
     ok;
 create_tabs({error, {_, {already_exists,_}}}) ->

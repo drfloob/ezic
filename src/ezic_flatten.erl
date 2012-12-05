@@ -14,16 +14,14 @@
 
 
 -export([
-	 flatten/0
+	 flatten/2
 	 , contains_date/2
 	 , ms/2
 	]).
 
 
-flatten() ->
-    AllZones= ezic_db:get_all(zone),
-    flatten_all_zones(AllZones),
-    done.
+flatten(Zones, AllRules) ->
+    flatten_all_zones(Zones, AllRules).
 
 
 contains_date(FlatZone, Date) ->
@@ -71,19 +69,21 @@ ms(Date, Name) ->
 % PRIVATE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+flatten_all_zones(AllZones, AllRules) ->
+    flatten_all_zones(AllZones, AllRules, []).
 
 % recursively processes sets of similar zones until they're all done,
 % passing zone sets to flatten_zone_set/1
-flatten_all_zones([]) ->
-    done;
-flatten_all_zones([Z1|_]= AllZones) ->
+flatten_all_zones([], _AllRules, FlatZones) ->
+    FlatZones;
+flatten_all_zones([Z1|_]= AllZones, AllRules, FlatZones) ->
     io:format("Flattening zones: ~s~n", [Z1#zone.name]),
     {CurrentZones, RestZones}= ezic_zone:split_by_name(Z1, AllZones),
 
-    Flats= flatten_zone_set(CurrentZones),
-    ezic_db:insert_all(Flats),
+    Flats= flatten_zone_set(CurrentZones, AllRules),
+    %ezic_db:insert_all(Flats),
 
-    flatten_all_zones(RestZones).
+    flatten_all_zones(RestZones, AllRules, Flats ++ FlatZones).
 
 
 
@@ -108,18 +108,20 @@ contains_date2(#flatzone{wall_from=From, wall_to=To}, {Dt,#tztime{time=T, flag=F
 %% gathers relevant rules and creates flat periods of the same gmt
 %% offset (#flatzone). This is a recursive solution, eliminating Zones
 %% from the list until it's been exhausted
-flatten_zone_set(Zones) ->
-    flatten_zone_set(?MINFLAT, Zones, [], none).
+flatten_zone_set(Zones, AllRules) ->
+    flatten_zone_set(?MINFLAT, Zones, AllRules, [], none).
 
 
-% flatten_zone_set(FromTime, Zones, Flats) -> [#flatzone{}]
+% flatten_zone_set(FromTime, Zones, AllRules, Flats) -> [#flatzone{}]
 %    FromTime= #flatzone{*_from =/= undefined}
+%    AllRules= [#rule{}]
 %    Zones= [#zone{}]
 %    Flats= [#flatzone{}]
 %
 % assumes a new zone every time it is called
 flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
-		 , Zones %[Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | _RestZones], 
+		 , Zones %[Z1=#zone{rule=RuleName, until=UntilTime, gmtoff=Offset} | _RestZones],
+		 , AllRules
 		 , Flats
 		 , CurrentRule) ->
 
@@ -140,8 +142,8 @@ flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
     
 
     %% we gather all rules that _may_ apply
-    Rules= ezic_db:rules(RuleName),
-    
+    %Rules= ezic_db:rules(RuleName),
+    Rules= [R || R <- AllRules, R = #rule{name = RuleName}],
     
     ?debugVal(FromTime),
     ?debugVal(Rules),
@@ -164,7 +166,7 @@ flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
 	    ?debugMsg("maxyear reached from flatten_zone_set"),
 	    FinalFlats;
 	false -> 
-	    flatten_zone_set(NextFlat, RestZones, FinalFlats, EndingRule)
+	    flatten_zone_set(NextFlat, RestZones, AllRules, FinalFlats, EndingRule)
     catch 
 	exit:Reason ->
 	    ?debugMsg("bad year for nextflat:"),
