@@ -14,10 +14,11 @@
 	 , insert_all/1
 	 , wipe/1
 	 , flatten/0
+	 , get_implementation/0
 	]).
 
 -export([
-	 start_link/0
+	 start_link/1
 	 , init/1
 	 , code_change/3
 	 , handle_call/3
@@ -26,6 +27,8 @@
 	 , terminate/2
 	 ]).
 
+
+-record(state, {zones, rules, get_all, flatzone, insert_all, wipe, implementation}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PUBLIC API
@@ -63,18 +66,38 @@ wipe(Tab) ->
 flatten() ->
     gen_server:call(?MODULE, {flatten}).
 
+get_implementation() ->
+    gen_server:call(?MODULE, {implementation}).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GEN_SERVER 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+start_link(StartArgs) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, StartArgs, []).
 
+init(ezic_db_mnesia) ->
+    ezic_db_mnesia:init(),
+    State = #state{zones = fun ezic_db_mnesia:zones/1,
+		   rules = fun ezic_db_mnesia:rules/1,
+		   get_all = fun ezic_db_mnesia:get_all/1,
+		   flatzone = fun ezic_db_mnesia:flatzone/2,
+		   insert_all = fun ezic_db_mnesia:insert_all/1,
+		   wipe = fun ezic_db_mnesia:wipe/1,
+		   implementation = "mnesia"},
+    {ok, State};
 init(_) ->
     ezic_db_ets:init(),
-    {ok, []}.
+    State = #state{zones = fun ezic_db_ets:zones/1,
+		   rules = fun ezic_db_ets:rules/1,
+		   get_all = fun ezic_db_ets:get_all/1,
+		   flatzone = fun ezic_db_ets:flatzone/2,
+		   insert_all = fun ezic_db_ets:insert_all/1,
+		   wipe = fun ezic_db_ets:wipe/1,
+		   implementation = "ets"},
+    {ok, State}.
 
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %% DB Lookup
@@ -82,29 +105,39 @@ init(_) ->
 
 
 handle_call({zones, Name}, _, State) ->
-    Matches= ezic_db_ets:zones(Name),
+    ZoneFun= State#state.zones,
+    Matches= ZoneFun(Name),
     {reply, Matches, State};
 handle_call({rules, Name}, _, State) ->
-    Matches= ezic_db_ets:rules(Name),
+    RuleFun= State#state.rules,
+    Matches= RuleFun(Name),
     {reply, Matches, State};
 handle_call({all, Tab}, _, State) ->
-    Matches= ezic_db_ets:get_all(Tab),
+    GetAllFun= State#state.get_all,
+    Matches= GetAllFun(Tab),
     {reply, Matches, State};
 handle_call({flatzone, Date, Name}, _, State) ->
-    Result= ezic_db_ets:flatzone(Date, Name),
+    FlatzoneFun= State#state.flatzone,
+    Result= FlatzoneFun(Date, Name),
     {reply, Result, State};
 handle_call({insert_all, Records}, _, State) ->
-    ezic_db_ets:insert_all(Records),
+    InsertAllFun= State#state.insert_all,
+    InsertAllFun(Records),
     {noreply, State};
 handle_call({wipe, Tab}, _, State) ->
-    Result= ezic_db_ets:wipe(Tab),
+    WipeFun= State#state.wipe,
+    Result= WipeFun(Tab),
     {reply, Result, State};
 handle_call({flatten}, _, State) ->
-    Zones= ezic_db_ets:get_all(zone),
-    Rules= ezic_db_ets:get_all(rule),
+    GetAllFun= State#state.get_all,
+    Zones= GetAllFun(zone),
+    Rules= GetAllFun(rule),
     FlatZone= ezic_flatten:flatten(Zones, Rules),
-    Result= ezic_db_ets:insert_all(FlatZone),
+    InsertAllFun= State#state.insert_all,
+    Result= InsertAllFun(FlatZone),
     {reply, Result, State};
+handle_call({implementation}, _, State) ->
+    {reply, State#state.implementation, State};
 handle_call(_, _, State) ->
     {noreply, State}.
 

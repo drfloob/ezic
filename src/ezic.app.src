@@ -1,11 +1,11 @@
 {application, ezic,
  [
   {registered, []},
-  {vsn, "0.1.0"},
+  {vsn, "0.2.0"},
   {applications, [
                   kernel,       
                   stdlib
                  ]},
-  {mod, {ezic_app, []}},
+  {mod, {ezic_app, ezic_db_ets}},
   {env, [{db_dir, "db"}]}
  ]}.

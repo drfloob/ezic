@@ -24,8 +24,8 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the supervisor
 %%--------------------------------------------------------------------
-start_link(_) ->
-    supervisor:start_link(?MODULE, []).
+start_link(StartArgs) ->
+    supervisor:start_link(?MODULE, StartArgs).
 
 %%====================================================================
 %% Supervisor callbacks
@@ -39,9 +39,9 @@ start_link(_) ->
 %% to find out about restart strategy, maximum restart frequency and child 
 %% specifications.
 %%--------------------------------------------------------------------
-init(_) ->
-    EzicDb = {ezic_db,{ezic_db, start_link, []},
-	      permanent,2000,worker,[ezic_db_ets]},
+init(StartArgs) ->
+    EzicDb = {ezic_db,{ezic_db, start_link, [StartArgs]},
+	      permanent,2000,worker,[ezic_db]},
     {ok,{{one_for_all,3,30}, [EzicDb]}}.
 
 %%====================================================================

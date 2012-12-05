@@ -127,6 +127,7 @@ create_tabs(ok) ->
     insert_all(Zones),
     insert_all(Rules),
     FlatZones = ezic_flatten:flatten(Zones, Rules),
+    io:format("~p~n", [FlatZones]),
     insert_all(FlatZones),
 
     ok;

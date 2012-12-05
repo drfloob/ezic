@@ -143,7 +143,7 @@ flatten_zone_set(FromTimeStub=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
 
     %% we gather all rules that _may_ apply
     %Rules= ezic_db:rules(RuleName),
-    Rules= [R || R <- AllRules, R = #rule{name = RuleName}],
+    Rules= [R || R <- AllRules, R#rule.name =:= RuleName ],
     
     ?debugVal(FromTime),
     ?debugVal(Rules),
