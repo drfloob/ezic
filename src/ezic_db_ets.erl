@@ -34,11 +34,11 @@ flatzone(Date, TzName) ->
 	1 ->
 	    hd(FlatZones);
 	2 ->
-	    erlang:error(ambiguous_zone, FlatZones);
+	    {error, {ambiguous_zone, FlatZones}};
 	0 ->
-	    erlang:error(no_zone);
+	    {error, no_zone};
 	_ ->
-	    erlang:error(should_not_happen, {FlatZones, Date, TzName})
+	    {error, {should_not_happen, {FlatZones, Date, TzName}}}
     end.
 
 

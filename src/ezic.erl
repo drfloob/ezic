@@ -32,13 +32,8 @@ localtime(TzName) ->
 
 utc_to_local(UTCDatetime, TzName) ->
     NormalDatetime= ezic_date:normalize(UTCDatetime, u),
-    #flatzone{offset=Offset, dstoffset=DSTOffset}= ezic_db:flatzone(NormalDatetime, TzName),
+    utc_to_local_handleFlatzone(UTCDatetime, ezic_db:flatzone(NormalDatetime, TzName)).
     
-    ezic_date:add_offset(
-      ezic_date:add_offset(
-	UTCDatetime
-	, Offset)
-      , DSTOffset).
     
 
 local_to_utc(LocalDatetime, TzName) ->
@@ -101,3 +96,12 @@ test() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PRIVATE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+utc_to_local_handleFlatzone(_, X={error,_}) ->
+    X;
+utc_to_local_handleFlatzone(UTCDatetime, #flatzone{offset=Offset, dstoffset=DSTOffset}) ->
+    ezic_date:add_offset(
+      ezic_date:add_offset(
+    	UTCDatetime
+    	, Offset)
+      , DSTOffset).
