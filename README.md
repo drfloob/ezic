@@ -43,8 +43,8 @@ Example Setup
 -----
   
     # download the timezone data files
-    wget 'ftp://elsie.nci.nih.gov/pub/tzdata*.tar.gz'
-    tar -xvzf tzdata*.tar.gz -C /path/to/tzdata
+    wget 'ftp://ftp.iana.org/tz/tzdata-latest.tar.gz'
+    tar -xvzf tzdata-latest.tar.gz -C /path/to/tzdata
 
     # remove a few troublesome files
     cd /path/to/tzdata
