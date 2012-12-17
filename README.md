@@ -42,17 +42,21 @@ Admin API
 Example Setup
 -----
   
+    # setup your local environment
+    mkdir -p priv/tzdata
+
     # download the timezone data files
     wget 'ftp://ftp.iana.org/tz/tzdata-latest.tar.gz'
-    tar -xvzf tzdata-latest.tar.gz -C /path/to/tzdata
+    tar -xvzf tzdata-latest.tar.gz -C priv/tzdata
 
     # remove a few troublesome files
-    cd /path/to/tzdata
+    cd priv/tzdata
     rm *.sh *.gz *.tab factory Makefile
   
     # build and run ezic
+    cd -
     make all run
-    1> ezic:load("/path/to/tzdata").
+    1> application:start(ezic).
     2> ezic:localtime("Australia/Adelaide").
 
 
