@@ -48,7 +48,7 @@ Example Setup
 
     # remove a few troublesome files
     cd /path/to/tzdata
-    rm *.sh *.tab factory
+    rm *.sh *.gz *.tab factory Makefile
   
     # build and run ezic
     make all run
