@@ -77,7 +77,7 @@ flatten_all_zones(AllZones, AllRules) ->
 flatten_all_zones([], _AllRules, FlatZones) ->
     FlatZones;
 flatten_all_zones([Z1|_]= AllZones, AllRules, FlatZones) ->
-    io:format("Flattening zones: ~s~n", [Z1#zone.name]),
+    %% io:format("Flattening zones: ~s~n", [Z1#zone.name]),
     {CurrentZones, RestZones}= ezic_zone:split_by_name(Z1, AllZones),
 
     Flats= flatten_zone_set(CurrentZones, AllRules),

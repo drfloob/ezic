@@ -9,30 +9,15 @@
 load() ->
     load(?TZDIR).
 
-%% returns all records, parsed from the tzdata files.
-load(File) ->
+%% returns all records, parsed from the tzdata files in directory Dir.
+load(Dir) ->
     {ok, Records} = 
-	case filelib:is_dir(File) of
-	    true -> {ok, parse_dir(File)};
-	    false -> erlang:error(not_done)
-
-		%% case filelib:is_regular(File) of
-		%%     true -> {ok, parse_file(File)};
-		%%     false -> erlang:error(badFile, File)
-		%% end
+	case filelib:is_dir(Dir) of
+	    true -> {ok, parse_dir(Dir)};
+	    false -> erlang:error({not_a_directory, Dir})
 	end,
 
     Records.
-
-    %% {ok, Zones, Rules, Leaps, Links} = ezic_record:separate(Records),
-
-    %% ezic_db:wipe(),
-    %% ezic_db:init(),
-
-    %% ezic_db:insert_all(Zones),
-    %% ezic_db:insert_all(Rules),
-    %% ezic_db:insert_all(Leaps),
-    %% ezic_db:insert_all(Links).
     
 
 
@@ -43,18 +28,17 @@ load(File) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
-
 % returns a list of tzdata records for all files in folder
 % note: assumes every file in the folder is a tzdata file
-parse_dir(Folder) ->
-    {ok, Files} = file:list_dir(Folder),
-    lists:flatten([ parse_file(filename:join(Folder,File)) || File <- Files ]).
+parse_dir(Dir) ->
+    {ok, Files} = file:list_dir(Dir),
+    lists:flatten([ parse_file(filename:join(Dir,File)) || File <- Files ]).
 
 
 
 % returns a list of tzdata records from file
 parse_file(File) ->
+    %% io:format("Parsing File: ~p~n", [File]),
     {ok, FD} = file:open(File, [read]),
     parse_lines(file:read_line(FD), FD, []).
 
@@ -75,6 +59,7 @@ parse_lines({ok, Line}, File, Records) ->
 
 % the Line has data, so we parse it, build a record, and return it
 parse_to_record(Line, _, Records) ->
+    %% io:format("    Parsing Line: ~p~n", [Line]),
     [Type | Data] = string:tokens(Line, " \t"),
     {ok, PrevType, PrevName} = prev_rec_type(Records),
     {ok, Record} = build_record(Type, Data, {PrevType, PrevName}),
@@ -100,7 +85,7 @@ clean_line(Line) ->
     Line2= string:strip(Line1, both, $\n),
     Line3= string:strip(Line2, both, $\t),
     
-    %% remove comments and return
+    %% remove comments and returns
     FinalLine=Line3,
     CPos= string:chr(FinalLine, $#),
     case CPos of

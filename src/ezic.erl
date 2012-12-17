@@ -9,6 +9,7 @@
 	 , next_timechange_after/2
 	]).
 
+
 -export([
 	 load/1
 	 , dev/0
@@ -27,11 +28,6 @@
 
 localtime(TzName) ->
     utc_to_local(erlang:universaltime(), TzName).
-
-%% utc_to_local(UTCDatetime, TzName) ->
-%%     {ok, Zone, Rule}= current_as_of_utc(UTCDatetime, TzName),
-%%     SecDiff= time_offset(Zone, Rule),
-%%     ezic_date:add_seconds(UTCDatetime, SecDiff).
 
 
 utc_to_local(UTCDatetime, TzName) ->
@@ -78,14 +74,8 @@ load(Folder) ->
 
 
 dev() ->
-%    ezic:load(filename:join("priv","tzdata")),
-%    ezic_flatten:flatten(),
-%    Zones= ezic_db:zones("WET"),
-%    ezic_flatten:flatten_all_zones(Zones),
-
     application:start(ezic),
     ezic_db:flatzone({{2010,11,17}, #tztime{time={23,42,0}}}, "America/Los_Angeles"),
-
     ok.
 
 zf() ->
@@ -111,22 +101,3 @@ test() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PRIVATE
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%current_as_of_utc(UTCDatetime, TzName) ->
-%    CZone= ezic_zone:current_as_of_utc(UTCDatetime, TzName),
-%    RuleName= CZone#zone.rule,
-%    Rules= ezic_db:rules(RuleName),
-%    CRule= ezic_rule:current_as_of_utc(UTCDatetime, Rules),
-%    {ok, CZone, CRule}.
-    
-
-%%current_as_of_local(Datetime, TzName) ->
-%%    not_done.
-
-
-%time_offset(Zone, Rule) ->
-%    OffsetSec= ezic_zone:offset_sec(Zone),
-%    DSTSec= ezic_rule:dst_sec(Rule),
-%    OffsetSec + DSTSec.
-    
