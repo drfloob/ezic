@@ -8,6 +8,7 @@
 -export([
 	 zones/1
 	 , rules/1
+	 , flatzones/1
 	 , flatzone/2
 	 %, insert/2
 	 , get_all/1
@@ -41,6 +42,10 @@ zones(TzName) ->
 
 rules(TzName) ->
     gen_server:call(?MODULE, {rules, TzName}).
+
+
+flatzones(TzName) ->
+    gen_server:call(?MODULE, {flatzones, TzName}).
 
 
 flatzone(Date, TzName) ->
@@ -103,6 +108,10 @@ handle_call({all, Tab}, _, State) ->
     Mod= State#state.mod,
     Matches= Mod:get_all(Tab),
     {reply, Matches, State};
+handle_call({flatzones, Name}, _, State) ->
+    Mod= State#state.mod,
+    Result= Mod:flatzones(Name),
+    {reply, Result, State};
 handle_call({flatzone, Date, Name}, _, State) ->
     Mod= State#state.mod,
     Result= Mod:flatzone(Date, Name),

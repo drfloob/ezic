@@ -8,6 +8,7 @@
 	 init/0
 	 , zones/1
 	 , rules/1
+	 , flatzones/1
 	 , flatzone/2
 	 %, insert/2
 	 , get_all/1
@@ -27,9 +28,11 @@ implementation() -> ?MODULE.
 zones(TzName) ->
     ets:select(zone, [{#zone{name=TzName, _='_'}, [], ['$_']}]).
 
-
 rules(TzName) ->
     ets:select(rule, [{#rule{name=TzName, _='_'}, [], ['$_']}]).
+
+flatzones(TzName) ->
+    ets:select(flatzone, [{#flatzone{tzname=TzName, _='_'}, [], ['$_']}]).
 
 
 flatzone(Date, TzName) ->

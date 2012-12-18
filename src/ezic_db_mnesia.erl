@@ -8,6 +8,7 @@
 	 init/0
 	 , zones/1
 	 , rules/1
+	 , flatzones/1
 	 , flatzone/2
 	 %, insert/2
 	 , get_all/1
@@ -49,6 +50,15 @@ rules(Name) ->
 	end,
     {atomic, Rules}= mnesia:transaction(F),
     Rules.
+    
+% retrieve all flatzones by tz name
+flatzones(Name) ->
+    F = fun()->
+		Q = qlc:q([Z || Z=#flatzone{tzname=N} <- mnesia:table(flatzone), N=:=Name]),
+		qlc:e(Q)
+	end,
+    {atomic, FlatZones}= mnesia:transaction(F),
+    FlatZones.
     
 % get all records from table
 get_all(Tab) when is_atom(Tab) ->
