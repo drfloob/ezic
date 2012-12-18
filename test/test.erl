@@ -16,6 +16,4 @@ all() ->
 
 %% temporary db init because mnesia data gets corrupted between starting and stopping nodes.
 setup()->
-    ezic_db:init(),
-    ezic:load("priv/tzdata"),
-    ezic_flatten:flatten().
+    application:start(ezic).
