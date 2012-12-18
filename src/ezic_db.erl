@@ -28,7 +28,7 @@
 	 ]).
 
 
--record(state, {zones, rules, get_all, flatzone, insert_all, wipe, implementation}).
+-record(state, {mod}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PUBLIC API
@@ -78,25 +78,12 @@ get_implementation() ->
 start_link(StartArgs) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, StartArgs, []).
 
-init(ezic_db_mnesia) ->
-    ezic_db_mnesia:init(),
-    State = #state{zones = fun ezic_db_mnesia:zones/1,
-		   rules = fun ezic_db_mnesia:rules/1,
-		   get_all = fun ezic_db_mnesia:get_all/1,
-		   flatzone = fun ezic_db_mnesia:flatzone/2,
-		   insert_all = fun ezic_db_mnesia:insert_all/1,
-		   wipe = fun ezic_db_mnesia:wipe/1,
-		   implementation = "mnesia"},
-    {ok, State};
-init(_) ->
-    ezic_db_ets:init(),
-    State = #state{zones = fun ezic_db_ets:zones/1,
-		   rules = fun ezic_db_ets:rules/1,
-		   get_all = fun ezic_db_ets:get_all/1,
-		   flatzone = fun ezic_db_ets:flatzone/2,
-		   insert_all = fun ezic_db_ets:insert_all/1,
-		   wipe = fun ezic_db_ets:wipe/1,
-		   implementation = "ets"},
+
+%% TODO: create a db behavior
+init(DbModule) when DbModule =:= ezic_db_mnesia; 
+		    DbModule=:= ezic_db_ets ->
+    DbModule:init(),
+    State = #state{mod = DbModule},
     {ok, State}.
 
 %%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -105,39 +92,40 @@ init(_) ->
 
 
 handle_call({zones, Name}, _, State) ->
-    ZoneFun= State#state.zones,
-    Matches= ZoneFun(Name),
+    Mod= State#state.mod,
+    Matches= Mod:zones(Name),
     {reply, Matches, State};
 handle_call({rules, Name}, _, State) ->
-    RuleFun= State#state.rules,
-    Matches= RuleFun(Name),
+    Mod= State#state.mod,
+    Matches= Mod:rules(Name),
     {reply, Matches, State};
 handle_call({all, Tab}, _, State) ->
-    GetAllFun= State#state.get_all,
-    Matches= GetAllFun(Tab),
+    Mod= State#state.mod,
+    Matches= Mod:get_all(Tab),
     {reply, Matches, State};
 handle_call({flatzone, Date, Name}, _, State) ->
-    FlatzoneFun= State#state.flatzone,
-    Result= FlatzoneFun(Date, Name),
+    Mod= State#state.mod,
+    Result= Mod:flatzone(Date, Name),
     {reply, Result, State};
 handle_call({insert_all, Records}, _, State) ->
-    InsertAllFun= State#state.insert_all,
-    InsertAllFun(Records),
+    Mod= State#state.mod,
+    Mod:insert_all(Records),
     {noreply, State};
 handle_call({wipe, Tab}, _, State) ->
-    WipeFun= State#state.wipe,
-    Result= WipeFun(Tab),
+    Mod= State#state.mod,
+    Result= Mod:wipe(Tab),
     {reply, Result, State};
 handle_call({flatten}, _, State) ->
-    GetAllFun= State#state.get_all,
-    Zones= GetAllFun(zone),
-    Rules= GetAllFun(rule),
+    Mod= State#state.mod,
+    Zones= Mod:get_all(zone),
+    Rules= Mod:get_all(rule),
     FlatZone= ezic_flatten:flatten(Zones, Rules),
-    InsertAllFun= State#state.insert_all,
-    Result= InsertAllFun(FlatZone),
+    Result= Mod:insert_all(FlatZone),
     {reply, Result, State};
 handle_call({implementation}, _, State) ->
-    {reply, State#state.implementation, State};
+    Mod= State#state.mod,
+    Impl= Mod:implementation(),
+    {reply, Impl, State};
 handle_call(_, _, State) ->
     {noreply, State}.
 

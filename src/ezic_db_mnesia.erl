@@ -13,6 +13,7 @@
 	 , get_all/1
 	 , insert_all/1
 	 , wipe/1
+	 , implementation/0
 	]).
 
 -define(create(Record),
@@ -23,6 +24,7 @@
 			   ])).
 
 
+implementation() -> ?MODULE.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % READ - db reading methods

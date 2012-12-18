@@ -13,12 +13,16 @@
 	 , get_all/1
 	 , insert_all/1
 	 , wipe/1
+	 , implementation/0
 	]).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PUBLIC API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+implementation() -> ?MODULE.
 
 zones(TzName) ->
     ets:select(zone, [{#zone{name=TzName, _='_'}, [], ['$_']}]).
@@ -43,7 +47,11 @@ flatzone(Date, TzName) ->
 
 
 get_all(Tab) ->
-    ets:lookup(Tab, Tab).
+    try ets:lookup(Tab, Tab) of X -> X
+    catch error:X -> {error, X}
+    end.
+	    
+	     
 
 
 insert_all(Records) ->
