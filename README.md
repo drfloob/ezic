@@ -28,14 +28,6 @@ API
  * `ezic:localtime(TimeZone) -> datetime()`
  * `ezic:utc_to_local(universal_datetime(), TimeZone) -> local_datetime()`
  * `ezic:local_to_utc(local_datetime(), TimeZone) -> universal_datetime()`
- * `ezic:zone_convert(from_datetime(), TimeZoneFrom, TimeZoneTo) -> to_datetime()`
-
-
-
-Admin API
--------
-
- * `ezic:load("/path/to/tzdata") -> ok`
 
 
 
@@ -77,6 +69,10 @@ To maintain ezic's status as a public domain work, all contributions must also b
 
 Acknowledgements
 ----------------
+
+A big thanks to ezic's contributors:
+
+ * lsowen
 
 The decision to release this into the public domain was inspired by the (anti-) license of the [SQLite project](http://www.sqlite.org/copyright.html).
 
