@@ -72,7 +72,7 @@ Acknowledgements
 
 A big thanks to ezic's contributors:
 
- * lsowen
+ * [lsowen](https://github.com/lsowen)
 
 The decision to release this into the public domain was inspired by the (anti-) license of the [SQLite project](http://www.sqlite.org/copyright.html).
 
