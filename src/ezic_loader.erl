@@ -7,7 +7,12 @@
 
 
 load() ->
-    load(?TZDIR).
+    case application:get_env(tzdata_dir) of
+        undefined ->
+            load(?TZDIR);
+        {ok, Dir} ->
+            load(Dir)
+    end.
 
 %% returns all records, parsed from the tzdata files in directory Dir.
 load(Dir) ->

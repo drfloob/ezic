@@ -7,5 +7,5 @@
                   stdlib
                  ]},
   {mod, {ezic_app, ezic_db_ets}},
-  {env, [{db_dir, "db"}]}
+  {env, [{db_dir, "db"}, {tzdata_dir, "priv/tzdata"}]}
  ]}.
