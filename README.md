@@ -1,7 +1,7 @@
 ezic
 ====
 
-ezic is a native erlang library for working with timezones. It parses the Olson timezone database files, allowing native erlang timezone lookup and zone conversions without the use of shell commands or a UNIX system. 
+ezic is a native erlang library for working with timezones. It parses the Olson timezone database files, allowing native erlang timezone lookup and zone conversions without the use of shell commands or a UNIX system.
 
 See the [tz database](http://www.twinsun.com/tz/tz-link.htm) page for more information about the Olson database.
 
@@ -33,7 +33,7 @@ API
 
 Example Setup
 -----
-  
+
     # setup your local environment
     mkdir -p priv/tzdata
 
@@ -44,7 +44,7 @@ Example Setup
     # remove a few troublesome files
     cd priv/tzdata
     rm *.sh *.gz *.tab factory Makefile
-  
+
     # build and run ezic
     cd -
     make all run
@@ -63,7 +63,7 @@ This project is in the [public domain](http://en.wikipedia.org/wiki/Public_Domai
 Contributed Code
 ----------------
 
-To maintain ezic's status as a public domain work, all contributions must also be dedicated to the public domain. 
+To maintain ezic's status as a public domain work, all contributions must also be dedicated to the public domain.
 
 
 

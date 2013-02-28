@@ -59,9 +59,9 @@ normalize({{Y,M,D}, T={_,_,_}}) ->
 %% normalizes a date, and sets the #tztime{flag=Flag} if appropriate
 %% @todo ensure flag is valid
 %% @todo cover all the cases. this is currently just used for standard erlang datetimes
-normalize({D={_,_,_},T={HH,_,_}}, Flag) 
+normalize({D={_,_,_},T={HH,_,_}}, Flag)
   when is_atom(Flag), is_integer(HH) ->
-    
+
     DTz= {D, #tztime{time=T, flag=Flag}},
     normalize(DTz);
 
@@ -73,7 +73,7 @@ normalize(D, Flag) ->
 	_ ->
 	    erlang:error(badDateTime, D)
 	end.
-    
+
 
 
 
@@ -100,7 +100,7 @@ for_rule(Rule, Offset, PrevDSTOffset, NextDSTOffset, Year) ->
     {WT,ST,UT}= for_rule_old_dst(Rule, Offset, PrevDSTOffset, Year),
     WTNew= add_offset(WT, PrevDSTOffset, NextDSTOffset),
     {{WT,WTNew}, ST, UT}.
-    
+
 
 
 
@@ -166,7 +166,7 @@ add_offset(Datetime, FromOffset, ToOffset) ->
 
 
 
-% returns {WallTime, StdTime, UtcTime} 
+% returns {WallTime, StdTime, UtcTime}
 % where each is a datetime tuple: {{Y,M,D}{HH,MM,SS}}
 
 
@@ -175,7 +175,7 @@ all_times(X,_,_) when is_atom(X) ->
     {X,X,X};
 
 % universal time given
-all_times({Date, #tztime{time=UTCTime, flag=Flag}}, Offset, DSTOffset) 
+all_times({Date, #tztime{time=UTCTime, flag=Flag}}, Offset, DSTOffset)
   when Flag=:=u; Flag=:=g; Flag=:=z ->
     UTCDatetime= {Date, UTCTime},
 
@@ -202,7 +202,7 @@ all_times({Date, #tztime{time=STDTime, flag=s}}, Offset, DSTOffset) ->
 
 
 % wall time given
-all_times({Date, #tztime{time=WallTime, flag=Flag}}, Offset, DSTOffset) 
+all_times({Date, #tztime{time=WallTime, flag=Flag}}, Offset, DSTOffset)
   when Flag=:=w; Flag=:=undefined ->
     WallDatetime= {Date, WallTime},
 
@@ -236,21 +236,21 @@ compare(_, X) when X=:=min; X=:=minimum ->
 
 % returns true if DT1 =< DT2. False otherwise. can be used with lists:sort/2
 % both times are assumed to be in the same zone/DST context
-compare(DT1={{Y1,M1,D1},{HH1,MM1,SS1}}, DT2={{Y2,M2,D2},{HH2,MM2,SS2}}) 
+compare(DT1={{Y1,M1,D1},{HH1,MM1,SS1}}, DT2={{Y2,M2,D2},{HH2,MM2,SS2}})
 when is_integer(Y1), is_integer(Y2)
-     , is_integer(M1), is_integer(M2) 
-     , is_integer(D1), is_integer(D2) 
-     , is_integer(HH1), is_integer(HH2) 
-     , is_integer(MM1), is_integer(MM2) 
-     , is_integer(SS1), is_integer(SS2) 
+     , is_integer(M1), is_integer(M2)
+     , is_integer(D1), is_integer(D2)
+     , is_integer(HH1), is_integer(HH2)
+     , is_integer(MM1), is_integer(MM2)
+     , is_integer(SS1), is_integer(SS2)
      ->
-    
+
     DT1 =< DT2;
 
 
 compare({Date1, #tztime{time=Time1, flag=F}}
 	, {Date2, #tztime{time=Time2, flag=F}}) ->
-    
+
     Date1 =< Date2 orelse Time1 =< Time2;
 
 compare(X,Y) ->
@@ -284,7 +284,7 @@ first_day_limited(Day, {geq, N}, Y,M) ->
     next_day(Day, {Y,M,N});
 first_day_limited(Day, {leq, N}, Y,M) ->
     previous_day(Day, {Y,M,N}).
-    
+
 
 
 % Returns the soonest date on which Day (sun/mon/tue/etc.) occurs BEFORE the given date.
@@ -294,7 +294,7 @@ previous_day(Day, Date) ->
     LeqDoW= calendar:day_of_the_week(Date),
     case Daynum=:=LeqDoW of
 	true -> Date;
-	_ -> 
+	_ ->
 	    DayDiff= day_diff(LeqDoW, Daynum),
 	    add_days_in_month(-DayDiff, Date)
     end.
@@ -307,7 +307,7 @@ next_day(Day, Date) ->
     LeqDoW= calendar:day_of_the_week(Date),
     case Daynum=:=LeqDoW of
 	true -> Date;
-	_ -> 
+	_ ->
 	    DayDiff= day_diff(Daynum, LeqDoW),
 	    add_days_in_month(DayDiff, Date)
     end.
@@ -320,28 +320,28 @@ day_diff(From, To) ->
 	true -> From - To + 7;
 	_ -> From - To
     end.
-	     
+
 
 % adds/subtracts days within a month
 % errors-out if arguments require change of month
 add_days_in_month(Days, Date={Y,M,D}) ->
     case D+Days < 1 of
 	true -> erlang:error(no_previous_day, {Days, Date});
-	_ -> 
+	_ ->
 	    case D+Days > calendar:last_day_of_the_month(Y,M) of
 		true -> erlang:error(no_next_day, {Days, Date});
 		_ -> {Y,M,D+Days}
 	    end
     end.
-		    
+
 
 
 %% subtracts 1 second from a single datetime
 % @todo type checking
-m1s(Date= {{Y,M,D},{HH,MM,SS}}) 
+m1s(Date= {{Y,M,D},{HH,MM,SS}})
   when is_integer(Y), is_integer(M), is_integer(D)
      , is_integer(HH), is_integer(MM), is_integer(SS) ->
-    
+
     calendar:gregorian_seconds_to_datetime(calendar:datetime_to_gregorian_seconds(Date) - 1);
 
 %% subtracts 1 second from all datetimes
@@ -353,7 +353,7 @@ m1s({WD, SD, UD}) ->
 % @todo type checking
 m1s(W,S,U) when is_tuple(W), is_tuple(S), is_tuple(U) ->
     {m1s(W), m1s(S), m1s(U)}.
-	    
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

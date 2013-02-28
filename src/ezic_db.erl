@@ -76,7 +76,7 @@ get_implementation() ->
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% GEN_SERVER 
+%% GEN_SERVER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -85,7 +85,7 @@ start_link(StartArgs) ->
 
 
 %% TODO: create a db behavior
-init(DbModule) when DbModule =:= ezic_db_mnesia; 
+init(DbModule) when DbModule =:= ezic_db_mnesia;
 		    DbModule=:= ezic_db_ets ->
     DbModule:init(),
     State = #state{mod = DbModule},

@@ -53,8 +53,8 @@ get_all(Tab) ->
     try ets:lookup(Tab, Tab) of X -> X
     catch error:X -> {error, X}
     end.
-	    
-	     
+
+
 
 
 insert_all(Records) ->
@@ -77,7 +77,7 @@ wipe(Tab) ->
 init() ->
     {ok, DbDir}= application:get_env(db_dir),
     Filename= filename:join(DbDir, ?DB_FILENAME),
-    case db_sane(Filename) of 
+    case db_sane(Filename) of
 	true -> load_tabfile(Filename);
 	false -> create_tables(Filename)
     end,
@@ -96,7 +96,7 @@ db_sane(Filename) ->
 	{ok, _} -> true;
 	{error, _} -> false
     end.
-    
+
 
 
 %% creates the dets table and populates it.

@@ -22,7 +22,7 @@ parse([Name,GmtOffS,Rule,FormatS | UntilTokens]) ->
     GmtOff= ezic_parse:time_val(GmtOffS),
     Until = ezic_parse:until(UntilTokens),
     Format= ezic_parse:tz_abbr(FormatS),
-    
+
     {ok, #zone{
        name=Name, gmtoff=GmtOff, rule=Rule,
        format=Format, until=Until
@@ -46,11 +46,11 @@ get_zone_utc(_, []) ->
     erlang:error(no_current);
 get_zone_utc(_UTCDatetime, _Zones) ->
     not_done.
-			       
 
 
 
-% returns {[SimilarZone], [DifferentZone]} 
+
+% returns {[SimilarZone], [DifferentZone]}
 %   where Similar Zones are those with the same name as Zone
 %   and DifferentZones are all the rest
 split_by_name(#zone{name=N}, Zones) ->
@@ -72,7 +72,6 @@ offset_sec(Zone) ->
 
 
 
-
 % returns ALL datetimes projected for zone end (given current DST Offset)
 project_end(#zone{until=Until, gmtoff=Offset}, DSTOffset) ->
     NUntil= ezic_date:normalize(Until),
@@ -84,20 +83,20 @@ project_end_utc(Zone=#zone{}, DSTOffset) ->
 %    ?debugVal(Zone),
     {_,_,UTCDatetime}= project_end(Zone, DSTOffset),
     UTCDatetime.
-    
+
 
 
 
 %% returns [Zone | Rest] where Zone is the next zone after UTCFrom,
-%%  subject to the DST offset. 
-%% Note that dst differences *can* change which zone comes next, 
-%%  though it's very unlikely (and does not exist in the current tz database files). 
+%%  subject to the DST offset.
+%% Note that dst differences *can* change which zone comes next,
+%%  though it's very unlikely (and does not exist in the current tz database files).
 %%  this method covers that event, anyhow. see unit tests for examples.
 next(ZoneList, UTCFrom, DSTOff) ->
     %% ?debugMsg("next:"),
     %% ?debugVal(ZoneList),
     %% ?debugVal(UTCFrom),
-    
+
     DatedList= lists:map(
 		 fun(Z=#zone{until=Until, gmtoff=Offset})->
 			 NUntil= ezic_date:normalize(Until),

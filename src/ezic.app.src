@@ -3,7 +3,7 @@
   {registered, []},
   {vsn, "0.2.0"},
   {applications, [
-                  kernel,       
+                  kernel,
                   stdlib
                  ]},
   {mod, {ezic_app, ezic_db_ets}},

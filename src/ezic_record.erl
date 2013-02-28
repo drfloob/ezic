@@ -32,5 +32,5 @@ separate(Records) ->
     Leaps= [Z || Z=#leap{} <- Records],
     Links= [Z || Z=#link{} <- Records],
     {ok, Zones, Rules, Leaps, Links}.
-    
+
 
