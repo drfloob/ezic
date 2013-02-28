@@ -110,7 +110,7 @@ create_tables(Filename) ->
     true = ets:insert(rule, Rules),
 
     ets:new(flatzone, [duplicate_bag, named_table]),
-    %% io:format("~p~n", [Rules]),
+    %% error_logger:info_msg("~p~n", [Rules]),
     FlatZones = ezic_flatten:flatten(Zones, Rules),
     true = ets:insert(flatzone, FlatZones),
 
