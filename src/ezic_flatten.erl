@@ -53,9 +53,9 @@ ms(Date, Name) ->
     %% 		     , utc_from=SDate, utc_to=SDate
     %% 		     },
     %% {ok, TestResult}= ets:test_ms(TestFZ, MS),
-    %% io:format("TestFZ: ~p~n", [TestFZ]),
-    %% io:format("MS: ~p~n", [MS]),
-    %% io:format("TestResult: ~p~n", [TestResult]),
+    %% error_logger:info_msg("TestFZ: ~p~n", [TestFZ]),
+    %% error_logger:info_msg("MS: ~p~n", [MS]),
+    %% error_logger:info_msg("TestResult: ~p~n", [TestResult]),
 
     MS.
 
@@ -72,7 +72,7 @@ flatten_all_zones(AllZones, AllRules) ->
 flatten_all_zones([], _AllRules, FlatZones) ->
     FlatZones;
 flatten_all_zones([Z1|_]= AllZones, AllRules, FlatZones) ->
-    io:format("Flattening zones: ~s~n", [Z1#zone.name]),
+    error_logger:info_msg("Flattening zones: ~s~n", [Z1#zone.name]),
     {CurrentZones, RestZones}= ezic_zone:split_by_name(Z1, AllZones),
     Flats= flatten_zone_set(CurrentZones, AllRules),
     flatten_all_zones(RestZones, AllRules, Flats ++ FlatZones).
@@ -231,7 +231,7 @@ flatten_rule_set(FlatStart=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset, offs
 	    end
     catch
 	error:{bad_year,Val} ->
-	    io:format("bad year for EndingRule: ~p~n", [EndingRule]),
+	    error_logger:error_msg("bad year for EndingRule: ~p~n", [EndingRule]),
 	    erlang:error(bad_year, Val)
     end.
 

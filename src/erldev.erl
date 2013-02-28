@@ -15,14 +15,14 @@ make_app([AppDirAtom]) ->
     Modules = get_modules(AppDir),
     AppSrc = try   get_app_src(AppDir)
 	     catch error:{badmatch, _} ->
-%		     io:format("Couldn't get AppSrcFile for ~p~n", [AppDir]),
+%		     error_logger:error_msg("Couldn't get AppSrcFile for ~p~n", [AppDir]),
 		     erlang:halt()
 	     end,
     {application, Name, Opts} = AppSrc,
     NewOpts = [ {modules, Modules} | Opts ],
     AppFile = filename:join([AppDir, "ebin", atom_to_list(Name) ++ ".app"]),
     ok = file:write_file(AppFile, io_lib:format("~p.~n", [{application, Name, NewOpts}])),
-    io:format("Wrote .app contents to: ~p~n", [AppFile]),
+    error_logger:info_msg("Wrote .app contents to: ~p~n", [AppFile]),
     ok.
 
 
@@ -43,6 +43,6 @@ get_modules(AppDir) ->
 get_app_src(AppDir) ->
     [AppSrcFile] = filelib:wildcard(filename:join([AppDir, "src", "*.app.src"])),
     {ok, [AppSrc]} = file:consult(AppSrcFile),
-    %io:format("AppSrc: ~p~n", [AppSrc]),
+    %error_logger:info_msg("AppSrc: ~p~n", [AppSrc]),
     AppSrc.
 
