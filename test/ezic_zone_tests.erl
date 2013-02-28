@@ -17,17 +17,17 @@ split_by_name_test_() ->
 
 project_end_utc_test_() ->
     [
-     ?_assertEqual({{2010,11,10},{16,20,0}}, 
+     ?_assertEqual({{2010,11,10},{16,20,0}},
 		   ezic_zone:project_end_utc(
 		     #zone{until={{2010,11,10},#tztime{time={10,20,0}, flag=w}}, gmtoff={-7,0,0}}
 		    , {1,0,0}))
 
-     , ?_assertEqual({{2010,11,10},{16,20,0}}, 
+     , ?_assertEqual({{2010,11,10},{16,20,0}},
 		   ezic_zone:project_end_utc(
 		     #zone{until={{2010,11,10},#tztime{time={9,20,0}, flag=s}}, gmtoff={-7,0,0}}
 		    , {1,0,0}))
 
-     , ?_assertEqual({{2010,11,10},{16,20,0}}, 
+     , ?_assertEqual({{2010,11,10},{16,20,0}},
 		   ezic_zone:project_end_utc(
 		     #zone{until={{2010,11,10},#tztime{time={16,20,0}, flag=u}}, gmtoff={-7,0,0}}
 		    , {1,0,0}))
@@ -46,11 +46,11 @@ next_datetime_test_() ->
 	       Z1=BZ#zone{until={{2010,11,15},#tztime{}}}
 	       , Z2=BZ#zone{until={{2010,11,5},#tztime{}}}
 	       , Z3=BZ#zone{until={{2010,11,25},#tztime{}}}
-	       
+
 	       , Zt1=BZ#zone{until={{2010,11,5},#tztime{time={5,0,0}, flag=u}}}
 	       , Zt2=BZ#zone{until={{2010,11,5},#tztime{time={12,0,0}, flag=u}}}
 	       , Zt3=BZ#zone{until={{2010,11,5},#tztime{time={17,0,0}, flag=u}}}
-	       
+
 	       , Zy1=BZ#zone{until={{1978,11,5},#tztime{}}}
 	       , Zy2=BZ#zone{until={{1979,11,5},#tztime{}}}
 	       , Zy3=BZ#zone{until={{1980,11,5},#tztime{}}}

@@ -18,7 +18,7 @@
 	]).
 
 -define(create(Record),
-	{atomic, ok} = mnesia:create_table(Record, 
+	{atomic, ok} = mnesia:create_table(Record,
 			   [{type, bag}
 			    , {disc_copies, [node()]}
 			    , {attributes, record_info(fields, Record)}
@@ -41,7 +41,7 @@ zones(Name) ->
 	end,
     {atomic, Zones}= mnesia:transaction(F),
     Zones.
-    
+
 % retrieve all rules by name
 rules(Name) ->
     F = fun()->
@@ -50,7 +50,7 @@ rules(Name) ->
 	end,
     {atomic, Rules}= mnesia:transaction(F),
     Rules.
-    
+
 % retrieve all flatzones by tz name
 flatzones(Name) ->
     F = fun()->
@@ -59,7 +59,7 @@ flatzones(Name) ->
 	end,
     {atomic, FlatZones}= mnesia:transaction(F),
     FlatZones.
-    
+
 % get all records from table
 get_all(Tab) when is_atom(Tab) ->
     F = fun() ->
@@ -96,7 +96,7 @@ flatzone(Date, TzName) ->
 	_ ->
 	    erlang:error(should_not_happen, {FlatZones, Date, TzName})
     end.
-    
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

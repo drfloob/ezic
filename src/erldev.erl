@@ -31,7 +31,7 @@ make_app([AppDirAtom]) ->
 %% folder (assuming OTP directory structure)
 get_modules(AppDir) ->
     lists:map(
-      fun(X)-> filename:basename(X, ".erl") end, 
+      fun(X)-> filename:basename(X, ".erl") end,
       filelib:wildcard(
 	filename:join([AppDir, "src", "*.erl"])
        )

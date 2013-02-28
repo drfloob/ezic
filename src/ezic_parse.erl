@@ -21,7 +21,7 @@ year("max") -> maximum;
 year("only") -> only;
 year(X) ->
     list_to_integer(X).
-     
+
 
 
 % X=last(Mon,Tue,Wed,...,Sun) -> {last, (Mon,Tue,Web,...,Sun)}
@@ -43,7 +43,7 @@ day_pattern(X=[D,A,Y, Sign,$= | IntS]) ->
 % X=int()
 day_pattern(X) ->
     list_to_integer(X).
-	    
+
 
 
 
@@ -134,7 +134,7 @@ sign($<) -> {ok, leq}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% INTERNAL 
+% INTERNAL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -154,9 +154,9 @@ tz_abbr(Format, 0) ->
 tz_abbr(Format, Pos) ->
     First=string:substr(Format, 1, Pos-1),
     Last=string:substr(Format, Pos+2),
-    string:concat(First, [$~, $s|Last]). 
-	    
-    
+    string:concat(First, [$~, $s|Last]).
+
+
 
 
 

@@ -16,10 +16,10 @@ parse([Name,FromS,ToS,_Type,InS,OnS,AtS,SaveS,Letters]) ->
     In= ezic_date:month_to_num(InS),
     On= ezic_parse:day_pattern(OnS),
     At= ezic_parse:time(AtS),
-    
+
     Save= ezic_parse:time_val(SaveS),
 
-    Rule= #rule{name=Name, from=From, to=To, type=not_done, 
+    Rule= #rule{name=Name, from=From, to=To, type=not_done,
 		in=In, on=On, at=At, save=Save, letters=Letters},
     {ok, Rule}.
 
@@ -63,7 +63,7 @@ years_after(Y, {_From, To}) when Y > To ->
 years_after(Y, {From, To}) ->
     {erlang:max(Y,From), To}.
 
-    
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INTERNAL
@@ -76,7 +76,7 @@ project_next2(Rule, Offset, UTCAfter, DSTOffset, Years={FromYear, _}) ->
     RuleDate= ezic_date:for_rule_utc(Rule, Offset, DSTOffset, FromYear),
     case ezic_date:compare(UTCAfter, RuleDate) andalso (not ezic_date:equal(UTCAfter, RuleDate)) of
 	true -> {FromYear, RuleDate};
-	false -> 
+	false ->
 	    RestYears= years_after(FromYear+1, Years),
 	    project_next2(Rule, Offset, UTCAfter, DSTOffset, RestYears)
     end.

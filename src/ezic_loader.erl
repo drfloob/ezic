@@ -16,14 +16,14 @@ load() ->
 
 %% returns all records, parsed from the tzdata files in directory Dir.
 load(Dir) ->
-    {ok, Records} = 
+    {ok, Records} =
 	case filelib:is_dir(Dir) of
 	    true -> {ok, parse_dir(Dir)};
 	    false -> erlang:error({not_a_directory, Dir})
 	end,
 
     Records.
-    
+
 
 
 
@@ -89,7 +89,7 @@ clean_line(Line) ->
     Line1= string:strip(Line),
     Line2= string:strip(Line1, both, $\n),
     Line3= string:strip(Line2, both, $\t),
-    
+
     %% remove comments and returns
     FinalLine=Line3,
     CPos= string:chr(FinalLine, $#),
