@@ -67,8 +67,6 @@ has_dst(Datetime, TzName, Flag) ->
         #flatzone{dstoffset={0,0,0}} ->
             false;
         #flatzone{dstoffset={_,_,_}} ->
-            true;
-        _ ->
-            false
+            true
     end.
 
