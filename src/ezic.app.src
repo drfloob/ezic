@@ -6,6 +6,6 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, {ezic_app, ezic_db_ets}},
-  {env, [{db_dir, "db"}, {tzdata_dir, "priv/tzdata"}]}
+  {mod, {ezic_app, []}},
+  {env, [{db_mod, ezic_db_ets}, {db_dir, "db"}, {tzdata_dir, "priv/tzdata"}]}
  ]}.

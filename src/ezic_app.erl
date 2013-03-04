@@ -25,8 +25,9 @@
 %% OTP design principles as a supervision tree, this means starting the
 %% top supervisor of the tree.
 %%--------------------------------------------------------------------
-start(_Type, StartArgs) ->
-    case ezic_sup:start_link(StartArgs) of
+start(_Type, _StartArgs) ->
+  {ok, DbMod} = application:get_env(db_mod),
+    case ezic_sup:start_link(DbMod) of
 	{ok, Pid} ->
 	    {ok, Pid};
 	Error ->
