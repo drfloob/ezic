@@ -5,6 +5,8 @@
 	 localtime/1
 	 , utc_to_local/2
 	 , local_to_utc/2
+	 , has_dst_utc/2
+	 , has_dst_local/2
 	]).
 
 
@@ -30,7 +32,11 @@ local_to_utc(LocalDatetime, TzName) ->
     local_to_utc_handleFlatzone(LocalDatetime, ezic_db:flatzone(NormalDatetime, TzName)).
 
 
+has_dst_utc(Datetime, TzName) ->
+    has_dst(Datetime, TzName, u).
 
+has_dst_local(Datetime, TzName) ->
+    has_dst(Datetime, TzName, w).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PRIVATE
@@ -54,4 +60,13 @@ local_to_utc_handleFlatzone(LocalDatetime, #flatzone{offset=Offset, dstoffset=DS
     	LocalDatetime
     	, Offset, {0,0,0})
       , DSTOffset, {0,0,0}).
+
+has_dst(Datetime, TzName, Flag) ->
+    NormalDatetime = ezic_date:normalize(Datetime, Flag),
+    case ezic_db:flatzone(NormalDatetime, TzName) of
+        #flatzone{dstoffset={0,0,0}} ->
+            false;
+        #flatzone{dstoffset={_,_,_}} ->
+            true
+    end.
 

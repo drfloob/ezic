@@ -43,3 +43,30 @@ local_to_utc_funkyDST_test_() ->
      , ?_assertMatch({{1951,9,7},{17,0,0}}, ezic:local_to_utc({{1951,9,8},{2,0,0}}, "Asia/Tokyo")) %% DST off for the last time
      , ?_assertMatch({{1952,5,3},{17,0,0}}, ezic:local_to_utc({{1952,5,4},{2,0,0}}, "Asia/Tokyo")) %% ensure DST not in effect for 1952
     ].
+
+has_dst_local_test_() ->
+    [
+     ?_assertMatch(false, ezic:has_dst_local({{1998,3,1},{1,30,0}}, "Europe/Paris")),
+     ?_assertMatch(true, ezic:has_dst_local({{1998,9,30},{1,30,0}}, "Europe/Paris")),
+     ?_assertMatch(true, ezic:has_dst_local({{1998,8,30},{3,30,0}}, "America/Denver")),
+     ?_assertMatch(false, ezic:has_dst_local({{1998,10,30},{3,30,0}}, "America/Denver")),
+     %% weird date
+     ?_assertMatch(false, ezic:has_dst_local({{1998,2,31},{10,30,0}}, "Europe/Paris")),
+     %% invalid zone
+     ?_assertException(error, {case_clause, {error, no_zone}}, ezic:has_dst_local({{1998,10,20},{12,30,0}}, "non_existent")),
+     %% ambiguous zone
+     ?_assertException(error, {case_clause, {error, {ambiguous_zone, _}}}, ezic:has_dst_local({{1998,10,25},{1,30,0}}, "America/Denver"))
+    ].
+
+has_dst_utc_test_() ->
+    [
+     ?_assertMatch(false, ezic:has_dst_utc({{1998,3,28},{13,30,0}}, "Europe/Paris")),
+     ?_assertMatch(true, ezic:has_dst_utc({{1998,3,29},{1,30,0}}, "Europe/Paris")),
+     ?_assertMatch(true, ezic:has_dst_utc({{1998,10,25},{7,59,59}}, "America/Denver")),
+     ?_assertMatch(false, ezic:has_dst_utc({{1998,10,25},{8,0,0}}, "America/Denver")),
+     %% weird date
+     ?_assertMatch(false, ezic:has_dst_utc({{1998,2,31},{13,30,0}}, "Europe/Paris")),
+     %% invalid zone
+     ?_assertException(error, {case_clause, {error, no_zone}}, ezic:has_dst_utc({{1998,10,25},{1,30,0}}, "non_existent"))
+    ].
+
