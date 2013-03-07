@@ -73,6 +73,9 @@ Acknowledgements
 A big thanks to ezic's contributors:
 
  * [lsowen](https://github.com/lsowen)
+ * [jrgdiz](https://github.com/jrgdiz)
+ * [arkdro](https://github.com/arkdro)
+ * [amasyura](https://github.com/amasyura)
 
 The decision to release this into the public domain was inspired by the (anti-) license of the [SQLite project](http://www.sqlite.org/copyright.html).
 
