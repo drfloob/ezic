@@ -25,8 +25,13 @@
 %% OTP design principles as a supervision tree, this means starting the
 %% top supervisor of the tree.
 %%--------------------------------------------------------------------
+
+%% TODO: remove by 2013.09.07 (6 months from today), to allow time for
+%% the transition
+start(_Type, [_]) ->
+    erlang:error("Failed transition to v0.3.0: See Pull Request: https://github.com/drfloob/ezic/pull/15");
 start(_Type, _StartArgs) ->
-  {ok, DbMod} = application:get_env(db_mod),
+    {ok, DbMod} = application:get_env(db_mod),
     case ezic_sup:start_link(DbMod) of
 	{ok, Pid} ->
 	    {ok, Pid};
