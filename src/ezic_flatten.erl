@@ -232,7 +232,7 @@ flatten_rule_set(FlatStart=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset, offs
     catch
 	error:{bad_year,Val} ->
 	    error_logger:error_msg("bad year for EndingRule: ~p~n", [EndingRule]),
-	    erlang:error(bad_year, Val)
+	    erlang:error({bad_year, Val})
     end.
 
 
@@ -313,7 +313,7 @@ maxyear_reached({{Y,_,_},_}) when Y =< ?MAXYEAR ->
 maxyear_reached(Atom) when Atom=:=maximum; Atom=:=current ->
     true; % for some N, taking n > N  =>  maximum > ?MAXYEAR
 maxyear_reached(Val) ->
-    erlang:error(bad_year, Val).
+    erlang:error({bad_year, Val}).
 
 
 

@@ -52,7 +52,7 @@ years(#rule{from=From, to=X}) when X=:=max; X=:=maximum->
 years(#rule{from=From, to=To}) when From =< To, is_integer(From), is_integer(To) ->
     {From, To};
 years(#rule{from=From, to=To}) ->
-    erlang:error(bad_year_range, [From, To]).
+    erlang:error({bad_year_range, [From, To]}).
 
 %% returns the range of years that are greater than OR equal to Y.
 %% calculation stops after a fixed year, configurable above.

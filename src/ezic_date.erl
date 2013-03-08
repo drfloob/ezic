@@ -71,7 +71,7 @@ normalize(D, Flag) ->
 	X when is_record(X, tztime) ->
 	    X#tztime{flag=Flag};
 	_ ->
-	    erlang:error(badDateTime, D)
+	    erlang:error({badDateTime, D})
 	end.
 
 
@@ -130,7 +130,7 @@ month_to_num("Sep") -> 9;
 month_to_num("Oct") -> 10;
 month_to_num("Nov") -> 11;
 month_to_num("Dec") -> 12;
-month_to_num(X) -> erlang:error(badMonth, X).
+month_to_num(X) -> erlang:error({badMonth, X}).
 
 
 
@@ -141,7 +141,7 @@ day_to_num("Thu") -> 4;
 day_to_num("Fri") -> 5;
 day_to_num("Sat") -> 6;
 day_to_num("Sun") -> 7;
-day_to_num(X) ->    erlang:error(badday, X).
+day_to_num(X) ->    erlang:error({badday, X}).
 
 
 
@@ -151,7 +151,7 @@ add_seconds(Datetime, Seconds) ->
       calendar:datetime_to_gregorian_seconds(Datetime) + Seconds
      )
     catch
-	error:_ -> erlang:error(baddate, Datetime)
+	error:_ -> erlang:error({baddate, Datetime})
     end.
 
 
@@ -254,7 +254,7 @@ compare({Date1, #tztime{time=Time1, flag=F}}
     Date1 =< Date2 orelse Time1 =< Time2;
 
 compare(X,Y) ->
-    erlang:error(bad_dates, [X,Y]).
+    erlang:error({bad_dates, [X,Y]}).
 
 
 equal(X,Y) when X=:=Y ->
@@ -326,10 +326,10 @@ day_diff(From, To) ->
 % errors-out if arguments require change of month
 add_days_in_month(Days, Date={Y,M,D}) ->
     case D+Days < 1 of
-	true -> erlang:error(no_previous_day, {Days, Date});
+	true -> erlang:error({no_previous_day, {Days, Date}});
 	_ ->
 	    case D+Days > calendar:last_day_of_the_month(Y,M) of
-		true -> erlang:error(no_next_day, {Days, Date});
+		true -> erlang:error({no_next_day, {Days, Date}});
 		_ -> {Y,M,D+Days}
 	    end
     end.

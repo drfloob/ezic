@@ -28,7 +28,7 @@ year(X) ->
 day_pattern(X=[$l,$a,$s,$t|Day]) ->
     case ezic_date:day_to_num(Day) > 0 of
 	true -> {last, Day};
-	false -> erlang:error(badday,X)
+	false -> erlang:error({badday,X})
     end;
 % X=(Mon,Tue,Wed,...,Sun)[<>]=int().
 day_pattern(X=[D,A,Y, Sign,$= | IntS]) ->
@@ -38,7 +38,7 @@ day_pattern(X=[D,A,Y, Sign,$= | IntS]) ->
 
     case ezic_date:day_to_num(Day) > 0 of
 	true -> #tzon{day=Day, filter={FSign, Int}};
-	false -> erlang:error(badday, X)
+	false -> erlang:error({badday, X})
     end;
 % X=int()
 day_pattern(X) ->
@@ -119,7 +119,7 @@ time_tokens([HS,MS,SS]) ->
     S= list_to_integer(SS),
     {H,M,S};
 time_tokens(X) ->
-    erlang:error(badtime, X).
+    erlang:error({badtime, X}).
 
 
 
@@ -143,7 +143,7 @@ time_flag_rev([F|RTime]) when F =:= $s; F =:= $w; F =:= $u ->
 time_flag_rev([F|RTime]) when F =:= $g; F =:= $z ->
     {u, RTime};
 time_flag_rev(X=[F|_]) when F-48 < 0; F-48 > 9 ->
-    erlang:error(badtime, lists:reverse(X));
+    erlang:error({badtime, lists:reverse(X)});
 time_flag_rev(RTime) ->
     {w, RTime}.
 
