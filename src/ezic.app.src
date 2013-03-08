@@ -1,7 +1,7 @@
 {application, ezic,
  [
   {registered, []},
-  {vsn, "0.2.0"},
+  {vsn, "0.3.0"},
   {applications, [
                   kernel,
                   stdlib
