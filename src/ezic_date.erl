@@ -70,7 +70,7 @@ normalize(D, Flag) ->
 	X when is_record(X, tztime) ->
 	    X#tztime{flag=Flag};
 	_ ->
-	    erlang:error({badDateTime, D})
+	    erlang:error({baddate, D})
 	end.
 
 
