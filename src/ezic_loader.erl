@@ -112,7 +112,7 @@ build_record(GmtOff, Data, {"Zone", PrevName}) ->
     ezic_zone:parse([PrevName,GmtOff|Data]);
 
 build_record(Type, Data, PT) ->
-    erlang:error(badLine, {Type, Data, PT}).
+    erlang:error({badLine, {Type, Data, PT}}).
 
 
 

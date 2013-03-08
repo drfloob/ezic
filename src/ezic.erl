@@ -21,15 +21,25 @@ localtime(TzName) ->
 
 %% returns time in given timezone for corresponding utc time
 utc_to_local(UTCDatetime, TzName) ->
-    NormalDatetime= ezic_date:normalize(UTCDatetime, u),
-    utc_to_local_handleFlatzone(UTCDatetime, ezic_db:flatzone(NormalDatetime, TzName)).
+    case ezic_date:assert_valid(UTCDatetime) of
+	ok ->
+	    NormalDatetime= ezic_date:normalize(UTCDatetime, u),
+	    utc_to_local_handleFlatzone(UTCDatetime, ezic_db:flatzone(NormalDatetime, TzName));
+	E ->
+	    E
+    end.
 
 
 
 %% returns utc time for corresponding time in given timezone utc
 local_to_utc(LocalDatetime, TzName) ->
-    NormalDatetime= ezic_date:normalize(LocalDatetime, w),
-    local_to_utc_handleFlatzone(LocalDatetime, ezic_db:flatzone(NormalDatetime, TzName)).
+    case ezic_date:assert_valid(LocalDatetime) of
+	ok ->
+	    NormalDatetime= ezic_date:normalize(LocalDatetime, w),
+	    local_to_utc_handleFlatzone(LocalDatetime, ezic_db:flatzone(NormalDatetime, TzName));
+	E ->
+	    E
+    end.
 
 
 has_dst_utc(Datetime, TzName) ->
@@ -62,11 +72,18 @@ local_to_utc_handleFlatzone(LocalDatetime, #flatzone{offset=Offset, dstoffset=DS
       , DSTOffset, {0,0,0}).
 
 has_dst(Datetime, TzName, Flag) ->
-    NormalDatetime = ezic_date:normalize(Datetime, Flag),
-    case ezic_db:flatzone(NormalDatetime, TzName) of
-        #flatzone{dstoffset={0,0,0}} ->
-            false;
-        #flatzone{dstoffset={_,_,_}} ->
-            true
+    case ezic_date:assert_valid(Datetime) of
+	ok ->
+	    NormalDatetime = ezic_date:normalize(Datetime, Flag),
+	    case ezic_db:flatzone(NormalDatetime, TzName) of
+		#flatzone{dstoffset={0,0,0}} ->
+		    false;
+		#flatzone{dstoffset={_,_,_}} ->
+		    true;
+		E={error, _} ->
+		    E
+	    end;
+	E ->
+	    E
     end.
 

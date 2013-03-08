@@ -16,10 +16,10 @@ smoke_test_() ->
     ].
 
 
-local_to_utc_errors_test_() ->
+local_to_utc_bad_zone_test_() ->
     [
      ?_assertMatch({error, {ambiguous_zone, _}}, ezic:local_to_utc({{2010,11,7},{1,0,0}}, "America/Los_Angeles"))
-     , ?_assertEqual({error, no_zone}, ezic:local_to_utc({{2010,3,14},{2,30,0}}, "America/Los_Angeles"))
+     , ?_assertMatch({error, no_zone}, ezic:local_to_utc({{2010,3,14},{2,30,0}}, "America/Los_Angeles"))
     ].
 
 
@@ -44,6 +44,34 @@ local_to_utc_funkyDST_test_() ->
      , ?_assertMatch({{1952,5,3},{17,0,0}}, ezic:local_to_utc({{1952,5,4},{2,0,0}}, "Asia/Tokyo")) %% ensure DST not in effect for 1952
     ].
 
+invalid_date_test_() ->
+    [
+     %% utc_to_local
+     ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+     %% local_to_utc
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+     %% has_dst_local
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+     %% has_dst_utc
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+    ].
+
 has_dst_local_test_() ->
     [
      ?_assertMatch(false, ezic:has_dst_local({{1998,3,1},{1,30,0}}, "Europe/Paris")),
@@ -51,11 +79,11 @@ has_dst_local_test_() ->
      ?_assertMatch(true, ezic:has_dst_local({{1998,8,30},{3,30,0}}, "America/Denver")),
      ?_assertMatch(false, ezic:has_dst_local({{1998,10,30},{3,30,0}}, "America/Denver")),
      %% weird date
-     ?_assertMatch(false, ezic:has_dst_local({{1998,2,31},{10,30,0}}, "Europe/Paris")),
+     ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{1998,2,31},{10,30,0}}, "Europe/Paris")),
      %% invalid zone
-     ?_assertException(error, {case_clause, {error, no_zone}}, ezic:has_dst_local({{1998,10,20},{12,30,0}}, "non_existent")),
+     ?_assertMatch({error, no_zone}, ezic:has_dst_local({{1998,10,20},{12,30,0}}, "non_existent")),
      %% ambiguous zone
-     ?_assertException(error, {case_clause, {error, {ambiguous_zone, _}}}, ezic:has_dst_local({{1998,10,25},{1,30,0}}, "America/Denver"))
+     ?_assertMatch({error, {ambiguous_zone, _}}, ezic:has_dst_local({{1998,10,25},{1,30,0}}, "America/Denver"))
     ].
 
 has_dst_utc_test_() ->
@@ -65,8 +93,8 @@ has_dst_utc_test_() ->
      ?_assertMatch(true, ezic:has_dst_utc({{1998,10,25},{7,59,59}}, "America/Denver")),
      ?_assertMatch(false, ezic:has_dst_utc({{1998,10,25},{8,0,0}}, "America/Denver")),
      %% weird date
-     ?_assertMatch(false, ezic:has_dst_utc({{1998,2,31},{13,30,0}}, "Europe/Paris")),
+     ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{1998,2,31},{13,30,0}}, "Europe/Paris")),
      %% invalid zone
-     ?_assertException(error, {case_clause, {error, no_zone}}, ezic:has_dst_utc({{1998,10,25},{1,30,0}}, "non_existent"))
+     ?_assertMatch({error, no_zone}, ezic:has_dst_utc({{1998,10,25},{1,30,0}}, "non_existent"))
     ].
 

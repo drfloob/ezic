@@ -26,8 +26,8 @@ time_test_() ->
      , ?_assertEqual(#tztime{time={1,28,14}, flag=u}, ezic_parse:time("1:28:14g"))
      , ?_assertEqual(#tztime{time={1,28,14}, flag=u}, ezic_parse:time("1:28:14z"))
 
-     , ?_assertError(badtime, ezic_parse:time("1:28:14wtf?"))
-     , ?_assertError(badtime, ezic_parse:time("1:28:14:00"))
+     , ?_assertError({badtime, _}, ezic_parse:time("1:28:14wtf?"))
+     , ?_assertError({badtime, _}, ezic_parse:time("1:28:14:00"))
     ].
 
 
@@ -43,8 +43,8 @@ time_val_test_() ->
      , ?_assertEqual({1,28,14}, ezic_parse:time_val("1:28:14g"))
      , ?_assertEqual({1,28,14}, ezic_parse:time_val("1:28:14z"))
 
-     , ?_assertError(badtime, ezic_parse:time_val("1:28:14wtf?"))
-     , ?_assertError(badtime, ezic_parse:time_val("1:28:14:00"))
+     , ?_assertError({badtime, _}, ezic_parse:time_val("1:28:14wtf?"))
+     , ?_assertError({badtime, _}, ezic_parse:time_val("1:28:14:00"))
     ].
 
 
@@ -55,11 +55,11 @@ day_pattern_test_() ->
 
      , ?_assertEqual({last, "Sun"}, ezic_parse:day_pattern("lastSun"))
      , ?_assertEqual({last, "Mon"}, ezic_parse:day_pattern("lastMon"))
-     , ?_assertError(badday, ezic_parse:day_pattern("lastFoo"))
+     , ?_assertError({badday, _}, ezic_parse:day_pattern("lastFoo"))
 
      , ?_assertEqual(#tzon{day="Sun", filter={geq, 8}}, ezic_parse:day_pattern("Sun>=8"))
      , ?_assertEqual(#tzon{day="Sun", filter={leq, 25}}, ezic_parse:day_pattern("Sun<=25"))
-     , ?_assertError(badday, ezic_parse:day_pattern("Foo<=25"))
+     , ?_assertError({badday, _}, ezic_parse:day_pattern("Foo<=25"))
     ].
 
 
