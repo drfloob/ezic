@@ -44,6 +44,34 @@ local_to_utc_funkyDST_test_() ->
      , ?_assertMatch({{1952,5,3},{17,0,0}}, ezic:local_to_utc({{1952,5,4},{2,0,0}}, "Asia/Tokyo")) %% ensure DST not in effect for 1952
     ].
 
+invalid_date_test_() ->
+    [
+     %% utc_to_local
+     ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:utc_to_local({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+     %% local_to_utc
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:local_to_utc({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+     %% has_dst_local
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_local({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+     %% has_dst_utc
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{2013,02,29}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{2013,02,a}, {0,0,0}}, "Asia/Tokyo"))
+     , ?_assertMatch({error, {baddate, _}}, ezic:has_dst_utc({{2013,02,28}, {a,0,0}}, "Asia/Tokyo"))
+
+    ].
+
 has_dst_local_test_() ->
     [
      ?_assertMatch(false, ezic:has_dst_local({{1998,3,1},{1,30,0}}, "Europe/Paris")),
