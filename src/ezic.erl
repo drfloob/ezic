@@ -62,11 +62,18 @@ local_to_utc_handleFlatzone(LocalDatetime, #flatzone{offset=Offset, dstoffset=DS
       , DSTOffset, {0,0,0}).
 
 has_dst(Datetime, TzName, Flag) ->
-    NormalDatetime = ezic_date:normalize(Datetime, Flag),
-    case ezic_db:flatzone(NormalDatetime, TzName) of
-        #flatzone{dstoffset={0,0,0}} ->
-            false;
-        #flatzone{dstoffset={_,_,_}} ->
-            true
+    case ezic_date:assert_valid(Datetime) of
+	ok ->
+	    NormalDatetime = ezic_date:normalize(Datetime, Flag),
+	    case ezic_db:flatzone(NormalDatetime, TzName) of
+		#flatzone{dstoffset={0,0,0}} ->
+		    false;
+		#flatzone{dstoffset={_,_,_}} ->
+		    true;
+		E={error, _} ->
+		    E
+	    end;
+	E ->
+	    E
     end.
 

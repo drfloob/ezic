@@ -56,10 +56,10 @@ for_rule_test_() ->
 		    { {{1952,1,1},{0,0,0}}, {{1951,12,31},{23,0,0}} },   % {oldDst, newDst} 
                     {{1951,12,31},{23,0,0}},
                     {{1951,12,31},{22,0,0}} },
-		  ezic_date:for_rule(
-		    #rule{from=1952, to=only, in=1, on=1, at=#tztime{}, save={0,0,0}}, 
-		    {1,0,0}, {1,0,0}, {0,0,0}, 1952))
-
+		     ezic_date:for_rule(
+		       #rule{from=1952, to=only, in=1, on=1, at=#tztime{}, save={0,0,0}}, 
+		       {1,0,0}, {1,0,0}, {0,0,0}, 1952))
+     
     ].
 
 
@@ -70,8 +70,8 @@ add_seconds_test_() ->
      , ?_assertEqual({{2010,11,7},{9,38,00}}, ezic_date:add_seconds({{2010,11,7},{9,37,59}}, 1))
 
      , ?_assertEqual({{2010,11,7},{9,37,59}}, ezic_date:add_seconds({{2010,11,7},{9,38,00}}, -1))
-     , ?_assertError(baddate, ezic_date:add_seconds({{2010,11,nope},{9,38,00}}, -1))
-     , ?_assertError(baddate, ezic_date:add_seconds({2010,11,nope}, -1))
+     , ?_assertError({baddate, _}, ezic_date:add_seconds({{2010,11,nope},{9,38,00}}, -1))
+     , ?_assertError({baddate, _}, ezic_date:add_seconds({2010,11,nope}, -1))
     ].
 
 

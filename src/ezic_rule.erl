@@ -103,7 +103,7 @@ years_test_() ->
      , ?_assertEqual({1952,max}, years(#rule{from=1952,to=max}))
      , ?_assertEqual({1952,maximum}, years(#rule{from=1952,to=maximum}))
 
-     , ?_assertError(bad_year_range, years(#rule{from=1955,to=1952}))
+     , ?_assertError({bad_year_range, _}, years(#rule{from=1955,to=1952}))
     ].
 
 
