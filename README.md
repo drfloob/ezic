@@ -1,3 +1,10 @@
+Backwards-incompatible changes in v0.3.0
+========================================
+
+see the wiki page for [v0.3.0](https://github.com/drfloob/ezic/wiki/v0.3.0).
+
+----
+
 ezic
 ====
 
