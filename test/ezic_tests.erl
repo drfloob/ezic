@@ -16,7 +16,7 @@ smoke_test_() ->
     ].
 
 
-local_to_utc_errors_test_() ->
+local_to_utc_bad_zone_test_() ->
     [
      ?_assertMatch({error, {ambiguous_zone, _}}, ezic:local_to_utc({{2010,11,7},{1,0,0}}, "America/Los_Angeles"))
      , ?_assertMatch({error, no_zone}, ezic:local_to_utc({{2010,3,14},{2,30,0}}, "America/Los_Angeles"))
