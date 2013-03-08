@@ -7,17 +7,16 @@
 -export([
 	 normalize/1
 	 , normalize/2
+	 , assert_valid/1
 
 	 % rule-specific
 	 , for_rule_relative/2
 	 , for_rule/5
 	 , for_rule_utc/4
 
-
 	 % converters
 	 , month_to_num/1
 	 , day_to_num/1
-
 
 	 % date math
 	 , add_seconds/2
@@ -261,6 +260,18 @@ equal(X,Y) when X=:=Y ->
     true;
 equal(_,_) ->
     false.
+
+
+%% returns ok or {error, baddate}
+assert_valid(Date) ->
+    try
+	add_seconds(Date, 1),
+	ok
+    catch
+	error:X={baddate, _} ->
+	    {error, X}
+    end.
+	
 
 
 

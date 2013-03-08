@@ -114,3 +114,19 @@ normalize_test_() ->
      , ?_assertEqual({{2010,11,16}, TZT}, ezic_date:normalize({{2010,11,#tzon{day="Tue", filter={geq, 10}}}, TZT}))
 
     ].
+
+
+
+assert_valid_test_() ->
+    [
+     ?_assertEqual(ok, ezic_date:assert_valid({{2013, 02, 28}, {0,0,0}}))
+     , ?_assertMatch({error, {baddate, _}}, ezic_date:assert_valid({{2013, 02, 29}, {0,0,0}}))
+
+     , ?_assertEqual(ok, ezic_date:assert_valid({{2013, 02, 28}, {0,0,0}}))
+     , ?_assertMatch({error, {baddate, _}}, ezic_date:assert_valid({{2013, 02, 28}, {a,0,0}}))
+
+     %% an oddity in date validity: negative time is OK ...
+     , ?_assertMatch(ok, ezic_date:assert_valid({{2013, 02, 28}, {-1,0,0}}))
+     %% ... but negative dates are not
+     , ?_assertMatch({error, {baddate, _}}, ezic_date:assert_valid({{2013, 02, -1}, {0,0,0}}))
+    ].
