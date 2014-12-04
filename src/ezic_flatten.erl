@@ -8,7 +8,6 @@
 
 
 
-%% @todo move MAXYEAR to config file
 -define(MAXYEAR, 2500). % last year to process flatzones for.
 
 
@@ -277,14 +276,14 @@ finish_and_start_flat(FlatStub=#flatzone{}, Zone=#zone{}, EndingDST) ->
 
 finish_and_start_flat(max_year, FlatStub, DSTOffset) ->
     EndFlat= ?ENDFLAT(FlatStub, current, current, current, DSTOffset),
-    Stop= {{?MAXYEAR+1,1,1},{0,0,0}},
+    Stop= {{get_maxyear()+1,1,1},{0,0,0}},
     NextFlat= #flatzone{utc_from=Stop},
     {EndFlat, NextFlat}.
 
 
 
 %% both timezone and rule are ending at the same time
-finish_flatzone_both(FlatStub=#flatzone{}, EndingZone=#zone{}, ChangingRule=#rule{save=NewDST}, EndingDST) ->
+finish_flatzone_both(FlatStub=#flatzone{}, EndingZone=#zone{}, #rule{save=NewDST}, EndingDST) ->
     %% ?debugVal(FlatStub),
 
     EndDatesP1={_,_,UD}= ezic_zone:project_end(EndingZone, EndingDST),
@@ -305,18 +304,25 @@ populate_flatzone(FZ=#flatzone{utc_from=UTCFrom, dstoffset=DSTOffset}
     FZ#flatzone{offset=Offset, tzname=Name, wall_from=WT, std_from=ST}.
 
 
-
-maxyear_reached({{Y,_,_},_}) when Y > ?MAXYEAR ->
+maxyear_reached({{Y, _, _}, _}) ->
+    case get_maxyear() of
+        ReachedMaxYear when Y > ReachedMaxYear ->
+            true;
+        _UnreachedMaxYear ->
+            false
+    end;
+maxyear_reached(Atom) when Atom =:= maximum; Atom =:= current ->
     true;
-maxyear_reached({{Y,_,_},_}) when Y =< ?MAXYEAR ->
-    false;
-maxyear_reached(Atom) when Atom=:=maximum; Atom=:=current ->
-    true; % for some N, taking n > N  =>  maximum > ?MAXYEAR
-maxyear_reached(Val) ->
-    erlang:error(bad_year, Val).
+maxyear_reached(AnythingElse) ->
+    erlang:error(bad_year, [{value, AnythingElse}]).
 
-
-
+get_maxyear() ->
+    case application:get_env(maxyear) of
+        {ok, Value} when is_integer(Value) andalso Value > 0 ->
+            Value;
+        _ ->
+            ?MAXYEAR
+    end.
 
 
 ms_guards(X, D) when X=:=u;X=:=g;X=:=z ->
