@@ -130,6 +130,20 @@ month_to_num("Sep") -> 9;
 month_to_num("Oct") -> 10;
 month_to_num("Nov") -> 11;
 month_to_num("Dec") -> 12;
+
+% because backzone:Isle_of_Man used "March" once instead of "Mar"
+month_to_num("January") -> 1;
+month_to_num("February") -> 2;
+month_to_num("March") -> 3;
+month_to_num("April") -> 4;
+month_to_num("May") -> 5;
+month_to_num("June") -> 6;
+month_to_num("July") -> 7;
+month_to_num("August") -> 8;
+month_to_num("September") -> 9;
+month_to_num("October") -> 10;
+month_to_num("November") -> 11;
+month_to_num("December") -> 12;
 month_to_num(X) -> erlang:error(badMonth, X).
 
 

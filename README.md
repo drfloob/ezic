@@ -43,7 +43,8 @@ Example Setup
 
     # remove a few troublesome files
     cd priv/tzdata
-    rm *.sh *.gz *.tab factory Makefile
+    LC_COLLATE=C
+    rm *.sh *.gz *.tab factory *.pl *.awk *.list [A-Z]*
 
     # build and run ezic
     cd -
@@ -76,6 +77,7 @@ A big thanks to ezic's contributors:
  * [jrgdiz](https://github.com/jrgdiz)
  * [arkdro](https://github.com/arkdro)
  * [amasyura](https://github.com/amasyura)
+ * [kudryashov-sv](https://github.com/kudryashov-sv)
 
 The decision to release this into the public domain was inspired by the (anti-) license of the [SQLite project](http://www.sqlite.org/copyright.html).
 
